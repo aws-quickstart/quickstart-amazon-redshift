@@ -126,3 +126,39 @@ Resources:
         PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
         PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
         VPCCIDR: !Ref VPCCIDR
+  RedshiftClusterStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL:
+        Fn::Sub: https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml.template.yaml
+      Parameters:
+        PublicSubnet1ID:
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.PublicSubnet1ID
+        VPCID:
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.VPCID
+        VPCCIDR :
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.VPCCIDR
+        InboundTrafficCIDR:
+          !Ref InboundTrafficCIDR
+        ClusterSubnetID:
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.PrivateSubnet1AID
+        DatabaseName:
+          !Ref DatabaseName
+        DatabasePort:
+          !Ref DatabasePort
+        MasterUsername:
+          !Ref MasterUsername
+        MasterUserPassword:
+          !Ref MasterUserPassword
+        NodeType:
+          !Ref NodeType
+        NumberOfNodes:
+          !Ref NumberOfNodes
