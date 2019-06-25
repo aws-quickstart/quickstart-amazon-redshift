@@ -94,9 +94,6 @@ Parameters:
       For a multi-node cluster, the NumberOfNodes parameter should be greater
       than 1.
     Type: Number
-  VPCID:
-    Description: ID of the Virtual Private Cloud.
-    Type: 'AWS::EC2::VPC::Id'
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
