@@ -1,1 +1,1 @@
-# quickstart-aws-redshift
+# quickstart-amazon-redshift
