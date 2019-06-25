@@ -127,7 +127,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        Fn::Sub: https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml.template.yaml
+        Fn::Sub: https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
       Parameters:
         PublicSubnet1ID:
           Fn::GetAtt:
