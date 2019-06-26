@@ -438,41 +438,6 @@ Resources:
           - !Ref 'AWS::Region'
           - .s3
       VpcId: !Ref VPC
-
-  SecretRotationLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription:  !Join [ " - ", [ "Security group for Secret Rotation Lambda ENIs", !Ref 'AWS::StackName' ] ] 
-      VpcId: !Ref VPC
-      Tags:
-      - Key: Name
-        Value: !Sub '${AWS::StackName}-SecretRotationLambdaSecurityGroup'
-
-  SecretRotationLambdaSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      GroupId: !GetAtt 'SecretRotationLambdaSecurityGroup.GroupId'
-      IpProtocol: -1
-      SourceSecurityGroupId: !Ref SecretRotationLambdaSecurityGroup
-      Description: 'Self Reference'
-        
-  SecretsManagerVPCEndpoint:
-    Type: 'AWS::EC2::VPCEndpoint'
-    Properties:
-      VpcEndpointType: 'Interface'
-      PrivateDnsEnabled: true
-      VpcId: !Ref VPC
-      SubnetIds:
-        - !Ref SubnetAPrivate
-        - !Ref SubnetBPrivate
-        - !Ref SubnetCPrivate 
-      SecurityGroupIds:
-        - !Ref SecretRotationLambdaSecurityGroup
-      ServiceName: !Join 
-        - ''
-        - - com.amazonaws.
-          - !Ref 'AWS::Region'
-          - .secretsmanager
      
 Outputs:
   TemplateID:
@@ -607,17 +572,5 @@ Outputs:
     Description: S3 VPC Endpoint
     Value: !Ref S3VPCEndpoint
     Export:
-      Name: !Sub '${AWS::StackName}-S3VPCEndpoint'
-      
-  SecretsManagerVPCEndpoint:
-    Description: Secrets Manager VPC Endpoint
-    Value: !Ref SecretsManagerVPCEndpoint
-    Export:
-      Name: !Sub '${AWS::StackName}-SecretsManagerVPCEndpoint'
-  
-  SecretRotationLambdaSecurityGroup:
-    Description: Secret Rotation Lambda SecurityGroup for AWS Secrets Manager
-    Value: !Ref SecretRotationLambdaSecurityGroup
-    Export:
-      Name: !Sub '${AWS::StackName}-SecretRotationLambdaSecurityGroup'  
-  
+      Name: !Sub '${AWS::StackName}-S3VPCEndpoint' 
+ 
