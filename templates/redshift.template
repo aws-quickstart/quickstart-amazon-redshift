@@ -748,13 +748,25 @@ Resources:
 ###############################################################################   
 Outputs:
 
+  TemplateID:
+    Description: 'Template ID'
+    Value: 'VPC-SSH-Bastion'
+    
+  StackName:
+    Description: 'Stack name'
+    Value: !Sub '${AWS::StackName}'
+
   RedshiftClusterEndpoint:
     Description: Redshift Cluster endpoint
     Value: !Sub "${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}"
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftClusterEndpoint'
     
   RedshiftParameterGroupName:
     Description: Name of the Redshift Parameter Group
     Value: !Ref RedshiftClusterParameterGroup
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftParameterGroupName'
     
   RedshiftDatabaseName:
     Description: Name of the Redshift Database
@@ -762,24 +774,41 @@ Outputs:
               - IsSnapshotSpecified
               - !Join [ ' ',['Check name of database from which the Snapshot', !Ref SnapshotIdentifier , ' was originally taken.']]
               - !Ref DatabaseName
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftDatabaseName'
     
   RedshiftUsername:
     Value: !Ref MasterUsername
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftUsername'
     
   RedshiftLoggingS3Bucket:
     Description: Name of S3 bucket created for Redshift Logging
     Condition: IsEnableLoggingToS3
     Value: !Ref RedshiftLoggingS3Bucket
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftLoggingS3Bucket'
       
   RedshiftClusterIAMRole:
     Description: IAM Role assigned to Redshift cluster
     Condition: IsConfigureRedshiftIAMRole
     Value: !GetAtt MyRedshiftIAMRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftClusterIAMRole'
+      
+  S3BucketForRedshiftIAMRole:
+    Description: IAM Role assigned to Redshift cluster
+    Condition: IsConfigureRedshiftIAMRole
+    Value: !Ref S3BucketForRedshiftIAMRole
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketForRedshiftIAMRole'
 
   GlueCatalogDBName:
     Description: Name of the AWS Glue Catalog Database
     Condition: IsGlueCatalogName
     Value: !Ref GlueCatalogDB
+    Export:
+      Name: !Sub '${AWS::StackName}-GlueCatalogDBName'
     
   PSQLCommandLine:    
     Description: PSQL Command Line
