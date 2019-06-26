@@ -1,3 +1,8 @@
+###########################################################################
+# Author: Sudhir Gupta
+# Date: 26-Jun-2019
+# Version: 1.0
+###########################################################################
 Description: "AWS VPC + bastion host + Amazon Redshift June,26,2019"
 Metadata:
   LICENSE: Apache License Version 2.0
