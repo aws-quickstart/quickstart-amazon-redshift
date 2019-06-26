@@ -1,7 +1,7 @@
 ###########################################################################
 # Author: Sudhir Gupta
-# Date: 20-Jun-2019
-# Version: 1.0
+# Date: 25-Jun-2019
+# Version: 1.1
 ###########################################################################
 
 AWSTemplateFormatVersion: '2010-09-09'
@@ -481,7 +481,7 @@ Resources:
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
-          ParameterValue: "[{\"user_group\":[\"etl_group\"],\"query_concurrency\":2,\"memory_percent_to_use\":35},{\"user_group\":[\"*ro*\"],\"user_group_wild_card\":1,\"query_concurrency\":2,\"concurrency_scaling\":\"auto\",\"max_execution_time\":120000,\"memory_percent_to_use\":15},{\"query_concurrency\":4,\"concurrency_scaling\":\"auto\",\"memory_percent_to_use\":40}]"
+          ParameterValue: "[ {\"query_group\" : [ ], \"query_group_wild_card\" : 0, \"user_group\" : [ ], \"user_group_wild_card\" : 0, \"concurrency_scaling\" : \"auto\", \"auto_wlm\" : true}, {\"short_query_queue\" : true} ]"
       Tags: 
         -
           Key: Name
@@ -793,4 +793,3 @@ Outputs:
                - !Ref MasterUsername
                - ' -d '
                - !Ref DatabaseName
-    
