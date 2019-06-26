@@ -503,6 +503,10 @@ Outputs:
     Description: 'Template ID'
     Value: 'VPC-SSH-Bastion'
     
+  StackName:
+    Description: 'Stack name'
+    Value: !Sub '${AWS::StackName}'
+    
   BastionAutoScalingGroup:
     Description: Auto Scaling Group Reference ID
     Value: !Ref BastionAutoScalingGroup
