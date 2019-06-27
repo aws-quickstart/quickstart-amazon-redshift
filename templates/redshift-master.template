@@ -1,8 +1,3 @@
-###########################################################################
-# Author: Sudhir Gupta
-# Date: 26-Jun-2019
-# Version: 1.0
-###########################################################################
 Description: "AWS VPC + bastion host + Amazon Redshift June,26,2019"
 Metadata:
   LICENSE: Apache License Version 2.0
@@ -12,21 +7,6 @@ Metadata:
           default: AWS VPC Configuration
         Parameters:
           - ClassB
-      - Label:
-          default: Amazon EC2 Configuration
-        Parameters:
-          - KeyPairName
-          - BastionInstanceType
-          - LogsRetentionInDays
-          - NotificationList
-      - Label:
-          default: Linux Bastion Configuration
-        Parameters:
-          - BastionTenancy
-          - EnableBanner
-          - BastionBanner
-          - EnableTCPForwarding
-          - EnableX11Forwarding
       -
         Label:
           default: Redshift Cluster Parameters
@@ -38,8 +18,7 @@ Metadata:
           - DatabaseName
           - MasterUsername
           - MasterUserPassword
-          - InboundTraffic
-          - SubscriptionEmail    
+          - NotificationList 
       -
         Label:
           default: Redshift additional/optional Parameters
@@ -65,6 +44,22 @@ Metadata:
           - TagProjectCostCenter
           - TagConfidentiality
           - TagCompliance
+      - Label:
+          default: Amazon EC2 Configuration
+        Parameters:
+          - RemoteAccessCIDR
+          - KeyPairName
+          - EnableBastion
+          - BastionInstanceType
+          - LogsRetentionInDays
+      - Label:
+          default: Linux Bastion Configuration
+        Parameters:
+          - BastionTenancy
+          - EnableBanner
+          - BastionBanner
+          - EnableTCPForwarding
+          - EnableX11Forwarding
     ParameterLabels:
       EnableLoggingToS3:
         default: Do you want to enable Redshift logging to Amazon S3 bucket?
@@ -79,7 +74,7 @@ Metadata:
       SnapshotAccountNumber:
         default: AWS Account number where the above snapshot was taken
       EnableBastion:
-        default: Create bastion stack
+        default: Do you want to create bastion stack? If not, ignore rest of EC2 parameters.
       BastionTenancy:
         default: Bastion Tenancy
       BastionBanner:
@@ -118,10 +113,6 @@ Metadata:
         default: Confidentiality classifier
       TagProjectCostCenter:
         default: Project cost center
-      KeyPairName:
-        default: Key Name
-      RemoteAccessCIDR:
-        default: Permitted IP range
 Parameters:
   NotificationList:
     Type: String
@@ -202,7 +193,6 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Description: Allowed CIDR block in the x.x.x.x/x format for external SSH access to the bastion host
     Type: String
-    
     
   AltInitScript:
     AllowedPattern: ^http.*|^$
@@ -426,6 +416,7 @@ Conditions:
 
     
 Resources:
+
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -438,6 +429,7 @@ Resources:
             - s3
       Parameters:
         ClassB: !Ref ClassB
+        
   BastionStack:
     Condition: EnableBastionAccess
     Type: 'AWS::CloudFormation::Stack'
@@ -462,6 +454,7 @@ Resources:
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         AltInitScript: !Ref AltInitScript
         OSImageOverride: !Ref OSImageOverride
+        
   RedshiftStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -473,10 +466,12 @@ Resources:
           Fn::GetAtt:
           - VPCStack
           - Outputs.StackName
-        ParentSSHBastionStack:
-          Fn::GetAtt:
-          - BastionStack
-          - Outputs.StackName
+        ParentSSHBastionStack: !If 
+          - EnableBastionAccess
+          - Fn::GetAtt:
+            - BastionStack
+            - Outputs.StackName
+          - ''
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
         ClusterType: !Ref ClusterType
