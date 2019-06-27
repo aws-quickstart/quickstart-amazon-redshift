@@ -1,6 +1,6 @@
 ###########################################################################
 # Author: Sudhir Gupta
-# Date: 25-Jun-2019
+# Date: 26-Jun-2019
 # Version: 1.1
 ###########################################################################
 
@@ -21,11 +21,10 @@ Parameters:
     AllowedPattern: '^[a-zA-Z]+[0-9a-zA-Z\-]*$'
     
   ParentSSHBastionStack:
-    Description: 'Provide Stack name of parent Amazon Linux bastion host stack based on VPC-SSH-Bastion yaml template. Refer Cloudformation dashboard in AWS Console to get this.'
+    Description: 'Optional - Provide Stack name of parent Amazon Linux bastion host stack based on linux-bastion template. Refer Cloudformation dashboard in AWS Console to get this.'
     Type: String
-    MinLength: '1'
+    MinLength: '0'
     MaxLength: '128'
-    AllowedPattern: '^[a-zA-Z]+[0-9a-zA-Z\-]*$'
     
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created
@@ -215,6 +214,12 @@ Metadata:
           - TagEnvironment
       -
         Label:
+          default: VPC / Network Parameters
+        Parameters:
+          - ParentVPCStack
+          - ParentSSHBastionStack
+      -
+        Label:
           default: Redshift Cluster Parameters
         Parameters:
           - ClusterType
@@ -224,8 +229,6 @@ Metadata:
           - DatabaseName
           - MasterUsername
           - MasterUserPassword
-          - InboundTraffic
-          - SubscriptionEmail    
       -
         Label:
           default: Redshift additional/optional Parameters
@@ -240,12 +243,6 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
-      -
-        Label:
-          default: VPC / Network Parameters
-        Parameters:
-          - ParentVPCStack
-          - ParentSSHBastionStack
       -
         Label:
           default: Mandatory Tags
@@ -269,7 +266,9 @@ Metadata:
         default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
       SnapshotAccountNumber:
         default: AWS Account number where the above snapshot was taken
-          
+      ParentSSHBastionStack:
+        default: Optional - Enter Parent Stack name used to create Bastion Host
+       
 ###############################################################################
 # Mappings
 ###############################################################################
@@ -326,6 +325,12 @@ Conditions:
   IsProd: !Equals [!Ref TagEnvironment, 'Production']
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !Equals [!Ref EnableLoggingToS3, 'true']
+  IsParentSSHBastionStack: 
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ParentSSHBastionStack
+  IsNotParentSSHBastionStack:  !Equals ['', !Ref ParentSSHBastionStack]
   IsConfigureRedshiftIAMRole: !Equals [!Ref S3BucketForRedshiftIAMRole, 'true']
   IsGlueCatalogName:
     Fn::Not:
@@ -383,11 +388,22 @@ Resources:
           FromPort: !Ref RedshiftClusterPort
           ToPort: !Ref RedshiftClusterPort
           CidrIp: 13.113.244.32/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          SourceSecurityGroupId:  {'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-BastionSecurityGroupID'}
-          Description: 'Access to Bastion Host Security Group'
+        - !If 
+              - IsNotParentSSHBastionStack
+              - IpProtocol: tcp
+                FromPort: !Ref RedshiftClusterPort
+                ToPort: !Ref RedshiftClusterPort
+                CidrIp: {'Fn::ImportValue': !Sub '${ParentVPCStack}-CidrBlock'}
+                Description: 'Redshift Access to VPC CIDR'  
+              - !Ref 'AWS::NoValue'
+        - !If 
+              - IsParentSSHBastionStack
+              - IpProtocol: tcp
+                FromPort: !Ref RedshiftClusterPort
+                ToPort: !Ref RedshiftClusterPort
+                SourceSecurityGroupId:  {'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-BastionSecurityGroupID'}
+                Description: 'Access to Bastion Host Security Group'  
+              - !Ref 'AWS::NoValue'
       Tags:
         -
           Key: Name
