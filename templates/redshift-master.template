@@ -347,8 +347,8 @@ Parameters:
   GlueCatalogDatabase:
     Type: String
     Description: "Enter name for your Glue Catalog database"
-    AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([a-z]|[0-9])*'
-    ConstraintDescription: must start with a-z and contain only a-z or 0-9.
+    AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
+    ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
   
   TagName:
     Type: String
