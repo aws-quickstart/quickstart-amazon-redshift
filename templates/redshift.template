@@ -137,8 +137,8 @@ Parameters:
   GlueCatalogDatabase:
     Type: String
     Description: "Enter name for your Glue Catalog database"
-    AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([a-z]|[0-9])*'
-    ConstraintDescription: must start with a-z and contain only a-z or 0-9.
+    AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
+    ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
   
 ###########################################################################
 # Mandatory tags that will be added to all resources that support tags
@@ -147,14 +147,14 @@ Parameters:
   TagName:
     Type: String
     Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
-    Default: 'lab'
+    Default: 'Lab'
 
   TagEnvironment:
     Type: String
     AllowedValues:
       - Development
-      - test
-      - pre-prod
+      - Test
+      - Pre-prod
       - Production
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     Default: 'Development'
@@ -243,6 +243,7 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
+          - NotificationList
       -
         Label:
           default: Mandatory Tags
@@ -267,7 +268,7 @@ Metadata:
       SnapshotAccountNumber:
         default: AWS Account number where the above snapshot was taken
       ParentSSHBastionStack:
-        default: Optional - Enter Parent Stack name used to create Bastion Host
+        default: ParentSSHBastionStack (Optional)
        
 ###############################################################################
 # Mappings
@@ -331,7 +332,11 @@ Conditions:
       - ''
       - Ref: ParentSSHBastionStack
   IsNotParentSSHBastionStack:  !Equals ['', !Ref ParentSSHBastionStack]
-  IsConfigureRedshiftIAMRole: !Equals [!Ref S3BucketForRedshiftIAMRole, 'true']
+  IsConfigureRedshiftIAMRole: 
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: S3BucketForRedshiftIAMRole
   IsGlueCatalogName:
     Fn::Not:
     - Fn::Equals:
@@ -491,9 +496,13 @@ Resources:
       ParameterGroupFamily: redshift-1.0
       Parameters:
         - ParameterName: enable_user_activity_logging
-          ParameterValue: 'false'
+          ParameterValue: 'true'
         - ParameterName: require_ssl
           ParameterValue: 'true'
+        - ParameterName: auto_analyze
+          ParameterValue: 'true'
+        - ParameterName: statement_timeout
+          ParameterValue: '7200000'
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
