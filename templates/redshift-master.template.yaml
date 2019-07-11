@@ -1,161 +1,498 @@
----
-AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS VPC + bastion host + Amazon Redshift June,26,2019"
+Metadata:
+  LICENSE: Apache License Version 2.0
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: AWS VPC Configuration
+        Parameters:
+          - ClassB
+      -
+        Label:
+          default: Redshift Cluster Parameters
+        Parameters:
+          - ClusterType
+          - NodeType
+          - NumberOfNodes
+          - RedshiftClusterPort
+          - DatabaseName
+          - MasterUsername
+          - MasterUserPassword
+          - NotificationList 
+      -
+        Label:
+          default: Redshift additional/optional Parameters
+        Parameters:
+          - EnableLoggingToS3
+          - MaxConcurrentCluster
+          - LoadTPCDS3TBDataset
+          - EncryptionAtRest
+          - kmskey
+          - SnapshotIdentifier
+          - SnapshotAccountNumber
+          - Maintenancewindow
+          - S3BucketForRedshiftIAMRole
+          - GlueCatalogDatabase
+      -
+        Label:
+          default: Mandatory Tags
+        Parameters:
+          - TagEnvironment
+          - TagName
+          - TagOwner
+          - TagTier       
+          - TagProjectCostCenter
+          - TagConfidentiality
+          - TagCompliance
+      - Label:
+          default: Amazon EC2 Configuration
+        Parameters:
+          - RemoteAccessCIDR
+          - KeyPairName
+          - EnableBastion
+          - BastionInstanceType
+          - LogsRetentionInDays
+      - Label:
+          default: Linux Bastion Configuration
+        Parameters:
+          - BastionTenancy
+          - EnableBanner
+          - BastionBanner
+          - EnableTCPForwarding
+          - EnableX11Forwarding
+    ParameterLabels:
+      EnableLoggingToS3:
+        default: Do you want to enable Redshift logging to Amazon S3 bucket?
+      MaxConcurrentCluster:
+        default: Max. number of Redshift Concurrency Scaling Clusters
+      EncryptionAtRest:
+        default: Do you want to encrypt Redshift database at-rest?
+      kmskey:
+        default: KMS key for encrypting Redshift database
+      SnapshotIdentifier:
+        default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
+      SnapshotAccountNumber:
+        default: AWS Account number where the above snapshot was taken
+      EnableBastion:
+        default: Do you want to create bastion stack? If not, ignore rest of EC2 parameters.
+      BastionTenancy:
+        default: Bastion Tenancy
+      BastionBanner:
+        default: Bastion Banner
+      BastionInstanceType:
+        default: Bastion Instance Type
+      EnableBanner:
+        default: Enable Banner
+      EnableTCPForwarding:
+        default: Enable TCP Forwarding
+      EnableX11Forwarding:
+        default: Enable X11 Forwarding
+      KeyPairName:
+        default: Key Pair Name
+      RemoteAccessCIDR:
+        default: Allowed Bastion External Access CIDR
+      AltInitScript:
+        default: Custom Bootstrap Script
+      OSImageOverride:
+        default: AMI override
+      NotificationList:
+        default: SNS Notification Email
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+      ClassB:
+        default: ClassB 2nd Octet
+      NotificationList:
+        default: SNS notification email
+      TagOwner:
+        default: Designate business owner's email  
+      TagCompliance:
+        default: Compliance classifier
+      TagConfidentiality:
+        default: Confidentiality classifier
+      TagProjectCostCenter:
+        default: Project cost center
 Parameters:
-  AvailabilityZones:
-    Description: List of Availability Zones to use for the subnets in the VPC. Only two Availability Zones are used for this deployment, and the logical order of
-      your selections is preserved.
-    Type: List<AWS::EC2::AvailabilityZone::Name>
-  NodeType:
-    AllowedValues:
-      - dc1.large
-      - dc1.8xlarge
-      - ds1.xlarge
-      - ds1.8xlarge
-      - ds2.xlarge
-      - ds2.8xlarge
-    ConstraintDescription: Must be a valid Amazon Redshift node type.
-    Default: dc1.large
-    Description: The node type to be provisioned for the Amazon Redshift cluster.
+  NotificationList:
     Type: String
-  KeyPairName:
-    ConstraintDescription: "Name of an existing EC2 KeyPair."
-    Type: "AWS::EC2::KeyPair::KeyName"
-  PrivateSubnet1CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/19
-    Description: CIDR block for private subnet 1 located in Availability Zone 1
-    Type: String
-  PrivateSubnet2CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.32.0/19
-    Description: CIDR block for private subnet 2 located in Availability Zone 2
-    Type: String
-  PublicSubnet1CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.128.0/20
-    Description: CIDR block for the public (DMZ) subnet 1 located in Availability
-      Zone 1
-    Type: String
-  PublicSubnet2CIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.144.0/20
-    Description: CIDR block for the public (DMZ) subnet 2 located in Availability
-      Zone 2
-    Type: String
-  VPCCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/16
-    Description: CIDR block for the VPC
-    Type: String
-  DatabaseName:
-    AllowedPattern: '([a-z]|[0-9])+'
-    ConstraintDescription: Must contain a-z or 0-9 only.
-    Default: defaultdb
-    Description: The name of the first database to be created when the Amazon Redshift cluster is created.
-    MaxLength: '64'
-    MinLength: '1'
-    Type: String
-  DatabasePort:
-    Default: '5439'
-    Description: >-
-      The port that Amazon Redshift will listen on and that will be allowed
-      through the Security Group.
-    Type: String
-  InboundTrafficCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
-    Description: Allow inbound traffic to the cluster from this CIDR range.
-    Type: String
-  MasterUserPassword:
-    AllowedPattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!.*[@/\"'']).*$'
-    ConstraintDescription: Must contain only alphanumeric characters.
-    Description: The password associated with the master user account for the Amazon Redshift cluster that is being created.
-    MaxLength: '64'
-    MinLength: '8'
-    NoEcho: 'true'
-    Type: String
-  MasterUsername:
-    AllowedPattern: '([a-z])([a-z]|[0-9])*'
-    ConstraintDescription: Must start with a-z and contain only a-z or 0-9.
-    Description: The user name associated with the master user account for the Amazon Redshift cluster that is being created.
-    MaxLength: '128'
-    MinLength: '1'
-    Type: String
-  NumberOfNodes:
-    Default: '2'
-    Description: >-
-      The number of compute nodes in the Amazon Redshift cluster. For a
-      single-node cluster, the NumberOfNodes parameter should be specified as 1.
-      For a multi-node cluster, the NumberOfNodes parameter should be greater
-      than 1.
+    Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm notifications
+    AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    ConstraintDescription: provide a valid email address.  
+    
+  LogsRetentionInDays:
+    Description: Specify the number of days you want to retain log events
     Type: Number
+    Default: 14
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]    
+    
+  BastionBanner:
+    Default: >-
+      https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
+    Description: Banner text to display upon login. Use default or provide AWS S3 location for the file containing Banner text.
+    Type: String
+    
+  BastionTenancy:
+    Description: 'VPC Tenancy in which bastion host will be launched. Options: ''dedicated'' or ''default'''
+    Type: String
+    Default: default
+    AllowedValues:
+      - dedicated
+      - default
+      
+  BastionInstanceType:
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+    Default: t2.micro
+    Description: Amazon EC2 instance type for the bastion instance. t2 instance types are not supported for dedicated VPC tenancy (option below).
+    Type: String
+    
+  EnableBanner:
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Default: 'true'
+    Description: >-
+      To include a banner to be displayed when connecting via SSH to the
+      bastion, set this parameter to true
+    Type: String
+    
+  EnableTCPForwarding:
+    Type: String
+    Description: Enable/Disable TCP Forwarding
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  EnableX11Forwarding:
+    Type: String
+    Description: Enable/Disable X11 Forwarding
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  KeyPairName:
+    Description: >-
+      Enter a Public/private key pair. If you do not have one in this AWS Region,
+      create it before continuing
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    
+  RemoteAccessCIDR:
+    AllowedPattern: >-
+      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: Allowed CIDR block in the x.x.x.x/x format for external SSH access to the bastion host
+    Type: String
+    
+  AltInitScript:
+    AllowedPattern: ^http.*|^$
+    ConstraintDescription: URL must begin with http
+    Description: Optional. Specify custom bootstrap script AWS S3 location to run during bastion host setup
+    Default: ''
+    Type: String
+    
+  OSImageOverride:
+    Description: Optional. Specify a region specific image to use for the instance
+    Type: String
+    Default: ''
+    
+  ClassB:
+    Description: 'Specify the 2nd Octet of IPv4 CIDR block for the VPC (10.XXX.0.0/16) in the range [0-255]'
+    Type: Number
+    Default: 0
+    ConstraintDescription: 'Must be in the range [0-255]'
+    MinValue: 0
+    MaxValue: 255
+    
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
-    Default: aws-quickstart
+    Default: sudhig-cfn-templates
     Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Type: String
+    
   QSS3KeyPrefix:
     AllowedPattern: "^[0-9a-zA-Z-/]*$"
     ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Default: quickstart-aws-redshift/
     Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
+    
+  EnableBastion: 
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "true"
+    Description: "If true, a bastion stack will be created."
+    Type: String
+    
+  DatabaseName:
+    Description: The name of the first database to be created when the cluster is created
+    Type: String
+    Default: rsdev01
+    AllowedPattern: '([a-z]|[0-9])+' 
+    
+  RedshiftClusterPort:
+    Description: The port number on which the cluster accepts incoming connections.
+    Type: Number
+    Default: '8200'
+  
+  ClusterType:
+    Description: The type of cluster
+    Type: String
+    Default: multi-node
+    AllowedValues:
+      - single-node
+      - multi-node
+    ConstraintDescription: must be single-node or multi-node.
+  
+  NumberOfNodes:
+    Description: >-
+      The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
+    Type: Number
+    Default: '2'
+  
+  NodeType:
+    Description: The type of node to be provisioned
+    Type: String
+    Default: dc2.large
+    AllowedValues:
+      - dc2.large
+      - dc2.8xlarge
+      - ds2.xlarge
+      - ds2.8xlarge
+  
+  MasterUsername:
+    Description: >-
+      The user name that is associated with the master user account for the cluster that is being created
+    Type: String
+    Default: rsadmin
+    AllowedPattern: '([a-z])([a-z]|[0-9])*'
+    ConstraintDescription: must start with a-z and contain only a-z or 0-9.
+  
+  MasterUserPassword:
+    Description: >-
+      The password that is associated with the master user account for the cluster that is being created. Example: Welcome123
+    Type: String
+    Default: Welcome123
+    NoEcho: 'true'
+    MinLength: '4'
+    MaxLength: '64'
+    AllowedPattern: >-
+     ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
+    ConstraintDescription: >-
+     Must contain only alphanumeric characters. Example: Welcome123
+  
+  Maintenancewindow:
+    Description: Maintenance Window for Redshift Cluster
+    Type: String
+    Default: 'sat:05:00-sat:05:30'
+        
+  MaxConcurrentCluster:
+    Description: Maximum Concurrency Scaling Redshift Clusters
+    Type: String
+    Default: '1'
+    
+  EncryptionAtRest:
+    Description: "Do you want to encrypt database at rest?"
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - true
+      - false
+    ConstraintDescription: must be true or false.
+  
+  kmskey:
+    Description: Existing KMS key ID
+    Type: String
+    Default: ''
+    
+  SnapshotIdentifier:
+    Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
+    Type: String
+    
+  SnapshotAccountNumber:
+    Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
+    Type: String
+    
+  NotificationList:
+    Type: String
+    Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm and event notifications
+    Default: "abc@xyz.com"
+    AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    ConstraintDescription: provide a valid email address.
+    
+  EnableLoggingToS3:
+    Default: 'false'
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Description: "Do you want to enable logging to S3 bucket?"
+    
+  S3BucketForRedshiftIAMRole:
+    Type: String
+    Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
+
+  GlueCatalogDatabase:
+    Type: String
+    Description: "Enter name for your Glue Catalog database"
+    AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
+    ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
+  
+  TagName:
+    Type: String
+    Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
+    Default: 'lab'
+
+  TagEnvironment:
+    Type: String
+    AllowedValues:
+      - Development
+      - test
+      - pre-prod
+      - Production
+    Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
+    Default: 'Development'
+    
+  TagTier:
+    Type: String
+    AllowedValues:
+      - data
+      - web
+      - application
+    Description: The tier key is used to designate the functional tier of the associated AWS resource.
+    Default: 'data'
+
+  TagProjectCostCenter:
+    Type: String
+    Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
+    AllowedPattern: "^[a-zA-Z0-9]+$"
+    Default: '12345'
+    ConstraintDescription:  provide a valid cost center
+     
+  TagOwner:
+    Type: String
+    Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
+    
+  TagConfidentiality:
+    Type: String
+    Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
+    AllowedValues:
+      - public
+      - private
+      - confidential
+      - pii/phi
+    Default: 'private'
+    
+  TagCompliance:
+    Type: String
+    Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.
+    AllowedValues:
+      - hipaa
+      - sox
+      - fips
+      - other
+      - none
+    Default: 'none'
+    
+Conditions:
+  GovCloudCondition: !Equals 
+    - !Ref 'AWS::Region'
+    - us-gov-west-1
+  EnableBastionAccess: !Equals
+    - !Ref EnableBastion
+    - "true"
+
+    
 Resources:
+
   VPCStack:
-    Type: AWS::CloudFormation::Stack
+    Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: !Sub >-
-        https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+      TemplateURL: !Sub
+        - https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
+        - QSS3Region:
+            Fn::If:
+            - GovCloudCondition
+            - s3-us-gov-west-1
+            - s3
       Parameters:
-        AvailabilityZones: !Join 
-          - ','
-          - !Ref AvailabilityZones
+        ClassB: !Ref ClassB
+        
+  BastionStack:
+    Condition: EnableBastionAccess
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub 
+        - https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template
+        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
+      Parameters:
+        ParentVPCStack:
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.StackName
+        NotificationList: !Ref NotificationList
+        LogsRetentionInDays: !Ref LogsRetentionInDays
+        BastionBanner: !Ref BastionBanner
+        BastionTenancy: !Ref BastionTenancy
+        BastionInstanceType: !Ref BastionInstanceType
+        EnableBanner: !Ref EnableBanner
+        EnableTCPForwarding: !Ref EnableTCPForwarding
+        EnableX11Forwarding: !Ref EnableX11Forwarding
         KeyPairName: !Ref KeyPairName
-        NumberOfAZs: '2'
-        PrivateSubnet1ACIDR: !Ref PrivateSubnet1CIDR
-        PrivateSubnet2ACIDR: !Ref PrivateSubnet2CIDR
-        PublicSubnet1CIDR: !Ref PublicSubnet1CIDR
-        PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
-        VPCCIDR: !Ref VPCCIDR
-  RedshiftClusterStack:
-    Type: AWS::CloudFormation::Stack
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        AltInitScript: !Ref AltInitScript
+        OSImageOverride: !Ref OSImageOverride
+        
+  RedshiftStack:
+    Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL:
-        Fn::Sub: https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
+      TemplateURL: !Sub 
+        - https://${QSS3BucketName}.s3.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template
+        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        PublicSubnet1ID:
+        ParentVPCStack:
           Fn::GetAtt:
           - VPCStack
-          - Outputs.PublicSubnet1ID
-        VPCID:
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.VPCID
-        VPCCIDR :
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.VPCCIDR
-        InboundTrafficCIDR:
-          !Ref InboundTrafficCIDR
-        ClusterSubnetID:
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.PrivateSubnet1AID
-        DatabaseName:
-          !Ref DatabaseName
-        DatabasePort:
-          !Ref DatabasePort
-        MasterUsername:
-          !Ref MasterUsername
-        MasterUserPassword:
-          !Ref MasterUserPassword
-        NodeType:
-          !Ref NodeType
-        NumberOfNodes:
-          !Ref NumberOfNodes
+          - Outputs.StackName
+        ParentSSHBastionStack: !If 
+          - EnableBastionAccess
+          - Fn::GetAtt:
+            - BastionStack
+            - Outputs.StackName
+          - ''
+        DatabaseName: !Ref DatabaseName
+        RedshiftClusterPort: !Ref RedshiftClusterPort
+        ClusterType: !Ref ClusterType
+        NumberOfNodes: !Ref NumberOfNodes
+        NodeType: !Ref NodeType
+        MasterUsername: !Ref MasterUsername
+        MasterUserPassword: !Ref MasterUserPassword
+        Maintenancewindow: !Ref Maintenancewindow
+        MaxConcurrentCluster: !Ref MaxConcurrentCluster
+        EncryptionAtRest: !Ref EncryptionAtRest
+        kmskey: !Ref kmskey
+        SnapshotIdentifier: !Ref SnapshotIdentifier
+        SnapshotAccountNumber: !Ref SnapshotAccountNumber
+        NotificationList: !Ref NotificationList
+        EnableLoggingToS3: !Ref EnableLoggingToS3
+        S3BucketForRedshiftIAMRole: !Ref S3BucketForRedshiftIAMRole
+        GlueCatalogDatabase: !Ref GlueCatalogDatabase
+        TagConfidentiality: !Ref TagConfidentiality
+        TagName: !Ref TagName
+        TagEnvironment: !Ref TagEnvironment
+        TagTier: !Ref TagTier
+        TagProjectCostCenter: !Ref TagProjectCostCenter
+        TagOwner: !Ref TagOwner
+        TagCompliance: !Ref TagCompliance
