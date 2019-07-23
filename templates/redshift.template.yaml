@@ -632,9 +632,9 @@ Resources:
           - !Ref RedshiftCluster
       Namespace: AWS/Redshift
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '3'
-      Threshold: '85'
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 85
       AlarmActions:
         - !Ref SNSTopic
       Dimensions:
@@ -656,9 +656,9 @@ Resources:
           - !Ref RedshiftCluster
       Namespace: AWS/Redshift
       Statistic: Average
-      Period: '900'
-      EvaluationPeriods: '2'
-      Threshold: '95'
+      Period: 900
+      EvaluationPeriods: 2
+      Threshold: 95
       AlarmActions:
         - !Ref SNSTopic
       Dimensions:
@@ -669,7 +669,6 @@ Resources:
   HighReadLatencyalarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
     Condition: IsProd
-    DependsOn: RedshiftCluster
     Properties:
       MetricName: !Join 
         - ''
@@ -681,9 +680,9 @@ Resources:
           - !Ref RedshiftCluster
       Namespace: AWS/Redshift
       Statistic: Average
-      Period: '300'
-      EvaluationPeriods: '3'
-      Threshold: '0.3'
+      Period: 300
+      EvaluationPeriods: 3
+      Threshold: 0.3
       AlarmActions:
         - !Ref SNSTopic
       Dimensions:
