@@ -25,7 +25,6 @@ Metadata:
       - Label:
           default: Redshift additional/optional Parameters
         Parameters:
-          - LogsRetentionInDays
           - EnableLoggingToS3
           - MaxConcurrentCluster
           - EncryptionAtRest
@@ -90,8 +89,6 @@ Metadata:
         default: Allowed Bastion External Access CIDR
       AltInitScript:
         default: Custom Bootstrap Script
-      OSImageOverride:
-        default: AMI override
       NotificationList:
         default: SNS Notification Email
       QSS3BucketName:
@@ -158,11 +155,6 @@ Parameters:
     Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm notifications
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     ConstraintDescription: provide a valid email address.  
-  LogsRetentionInDays:
-    Description: Specify the number of days you want to retain log events
-    Type: Number
-    Default: 14
-    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]    
   BastionBanner:
     Default: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
     Description: Banner text to display upon login. Use default or provide AWS S3 location for the file containing Banner text.
@@ -225,10 +217,6 @@ Parameters:
     Description: Optional. Specify custom bootstrap script AWS S3 location to run during bastion host setup
     Default: ''
     Type: String
-  OSImageOverride:
-    Description: Optional. Specify a region specific image to use for the instance
-    Type: String
-    Default: ''
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
@@ -420,22 +408,24 @@ Resources:
         - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        ParentVPCStack:
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.StackName
-        NotificationList: !Ref NotificationList
-        LogsRetentionInDays: !Ref LogsRetentionInDays
+        KeyPairName: !Ref KeyPairName
         BastionBanner: !Ref BastionBanner
+        EnableBanner: !Ref EnableBanner
         BastionTenancy: !Ref BastionTenancy
         BastionInstanceType: !Ref BastionInstanceType
-        EnableBanner: !Ref EnableBanner
-        EnableTCPForwarding: !Ref EnableTCPForwarding
-        EnableX11Forwarding: !Ref EnableX11Forwarding
-        KeyPairName: !Ref KeyPairName
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
         AltInitScript: !Ref AltInitScript
-        OSImageOverride: !Ref OSImageOverride
+        EnableX11Forwarding: !Ref EnableX11Forwarding
+        PublicSubnet1ID: !GetAtt 
+          - VPCStack
+          - Outputs.PublicSubnet1ID
+        PublicSubnet2ID: !GetAtt 
+          - VPCStack
+          - Outputs.PublicSubnet2ID
+        EnableTCPForwarding: !Ref EnableTCPForwarding
+        RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        VPCID: !GetAtt 
+          - VPCStack
+          - Outputs.VPCID
   RedshiftStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -453,6 +443,7 @@ Resources:
             - BastionStack
             - Outputs.StackName
           - ''
+        VPCCIDR: !Ref VPCCIDR
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
         ClusterType: !Ref ClusterType

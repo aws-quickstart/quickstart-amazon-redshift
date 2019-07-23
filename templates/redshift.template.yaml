@@ -1,17 +1,22 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: "Amazon Redshift July,23,2019"
 Parameters:
-  ParentVPCStack:
-    Description: 'Provide Stack name of parent VPC stack based on VPC-3AZs yaml template. Refer Cloudformation dashboard in AWS Console to get this.'
+  VPCID: 
+    Description: "ID of the VPC you are deploying Redshift into (e.g., vpc-0343606e)."
+    Type: 'AWS::EC2::VPC::Id'
+    Default: ''
+  VPCCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
+    Default: 10.0.0.0/16
+    Description: CIDR block for the VPC.
     Type: String
-    MinLength: '1'
-    MaxLength: '128'
-    AllowedPattern: '^[a-zA-Z]+[0-9a-zA-Z\-]*$'
-  ParentSSHBastionStack:
-    Description: 'Optional - Provide Stack name of parent Amazon Linux bastion host stack based on linux-bastion template. Refer Cloudformation dashboard in AWS Console to get this.'
-    Type: String
-    MinLength: '0'
-    MaxLength: '128'
+  Subnet1ID:
+    Description: The ID of the private subnet in Availability Zone 1.
+    Type: 'AWS::EC2::Subnet::Id'
+  Subnet2ID:
+    Description: The ID of the private subnet in Availability Zone 2.
+    Type: 'AWS::EC2::Subnet::Id'    
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created
     Type: String
@@ -156,19 +161,15 @@ Parameters:
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
-      -
-        Label:
+      - Label:
           default: Environment
         Parameters:
           - TagEnvironment
-      -
-        Label:
-          default: VPC / Network Parameters
+      - Label:
+          default: Network Configuration
         Parameters:
-          - ParentVPCStack
-          - ParentSSHBastionStack
-      -
-        Label:
+          - VPCID
+      - Label:
           default: Redshift Cluster Parameters
         Parameters:
           - ClusterType
@@ -215,8 +216,6 @@ Metadata:
         default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
       SnapshotAccountNumber:
         default: AWS Account number where the above snapshot was taken
-      ParentSSHBastionStack:
-        default: ParentSSHBastionStack (Optional)
 Mappings:
   RedshiftLoggingAccountIDRegionMap:
     us-east-1:
@@ -264,12 +263,6 @@ Conditions:
   IsProd: !Equals [!Ref TagEnvironment, 'Production']
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !Equals [!Ref EnableLoggingToS3, 'true']
-  IsParentSSHBastionStack: 
-    Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: ParentSSHBastionStack
-  IsNotParentSSHBastionStack:  !Equals ['', !Ref ParentSSHBastionStack]
   IsConfigureRedshiftIAMRole: 
     Fn::Not:
     - Fn::Equals:
@@ -295,52 +288,13 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: !Join [ " ", [ !Ref 'AWS::StackName', " - Redshift Security Group" ] ]
-      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+      VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref RedshiftClusterPort
           ToPort: !Ref RedshiftClusterPort
-          CidrIp: 52.15.247.160/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 52.23.63.224/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 54.70.204.128/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 52.210.255.224/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 13.229.254.0/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 54.153.249.96/27
-        - IpProtocol: tcp
-          FromPort: !Ref RedshiftClusterPort
-          ToPort: !Ref RedshiftClusterPort
-          CidrIp: 13.113.244.32/27
-        - !If 
-              - IsNotParentSSHBastionStack
-              - IpProtocol: tcp
-                FromPort: !Ref RedshiftClusterPort
-                ToPort: !Ref RedshiftClusterPort
-                CidrIp: {'Fn::ImportValue': !Sub '${ParentVPCStack}-CidrBlock'}
-                Description: 'Redshift Access to VPC CIDR'  
-              - !Ref 'AWS::NoValue'
-        - !If 
-              - IsParentSSHBastionStack
-              - IpProtocol: tcp
-                FromPort: !Ref RedshiftClusterPort
-                ToPort: !Ref RedshiftClusterPort
-                SourceSecurityGroupId:  {'Fn::ImportValue': !Sub '${ParentSSHBastionStack}-BastionSecurityGroupID'}
-                Description: 'Access to Bastion Host Security Group'  
-              - !Ref 'AWS::NoValue'
+          CidrIp: !Ref VPCCIDR
+          Description: 'Redshift Access to VPC CIDR'  
       Tags:
         -
           Key: Name
@@ -462,7 +416,9 @@ Resources:
     Type: 'AWS::Redshift::ClusterSubnetGroup'
     Properties:
       Description: Cluster subnet group
-      SubnetIds: !Split [',', {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetsPrivate'}]
+      SubnetIds: 
+        - !Ref Subnet1ID
+        - !Ref Subnet2ID
       Tags:
         -
           Key: Name
@@ -686,9 +642,6 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       Unit: Percent
 Outputs:
-  TemplateID:
-    Description: 'Template ID'
-    Value: 'VPC-SSH-Bastion'
   StackName:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
