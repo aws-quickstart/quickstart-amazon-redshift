@@ -512,7 +512,7 @@ Resources:
         - !Ref RedshiftSecurityGroup
       PreferredMaintenanceWindow: !Ref Maintenancewindow
       AutomatedSnapshotRetentionPeriod: !If [IsProd, 35, 7]
-      PubliclyAccessible: 'false'
+      PubliclyAccessible: false
       ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
       LoggingProperties: !If 
           - IsEnableLoggingToS3
