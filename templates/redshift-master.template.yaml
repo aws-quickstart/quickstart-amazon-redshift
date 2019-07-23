@@ -5,10 +5,7 @@ Metadata:
     ParameterGroups:
       - Label:
           default: AWS VPC Configuration
-        Parameters:
-          - ClassB
-      -
-        Label:
+      - Label:
           default: Redshift Cluster Parameters
         Parameters:
           - ClusterType
@@ -100,8 +97,6 @@ Metadata:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-      ClassB:
-        default: ClassB 2nd Octet
       TagOwner:
         default: Designate business owner's email  
       TagCompliance:
@@ -187,13 +182,6 @@ Parameters:
     Description: Optional. Specify a region specific image to use for the instance
     Type: String
     Default: ''
-  ClassB:
-    Description: 'Specify the 2nd Octet of IPv4 CIDR block for the VPC (10.XXX.0.0/16) in the range [0-255]'
-    Type: Number
-    Default: 0
-    ConstraintDescription: 'Must be in the range [0-255]'
-    MinValue: 0
-    MaxValue: 255
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
@@ -366,8 +354,6 @@ Resources:
             - GovCloudCondition
             - s3-us-gov-west-1
             - s3
-      Parameters:
-        ClassB: !Ref ClassB
   BastionStack:
     Condition: EnableBastionAccess
     Type: 'AWS::CloudFormation::Stack'
