@@ -294,7 +294,7 @@ Parameters:
     Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
     Type: String
   EnableLoggingToS3:
-    Default: 'false'
+    Default: false
     Type: String
     AllowedValues:
       - true
