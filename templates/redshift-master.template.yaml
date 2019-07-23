@@ -275,7 +275,6 @@ Parameters:
   MasterUserPassword:
     Description: 'The password that is associated with the master user account for the cluster that is being created. Example: Welcome123'
     Type: String
-    Default: Welcome123
     NoEcho: 'true'
     MinLength: '4'
     MaxLength: '64'
