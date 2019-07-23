@@ -122,8 +122,7 @@ Parameters:
     Default: 14
     AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]    
   BastionBanner:
-    Default: >-
-      https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
+    Default: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
     Description: Banner text to display upon login. Use default or provide AWS S3 location for the file containing Banner text.
     Type: String
   BastionTenancy:
@@ -152,8 +151,7 @@ Parameters:
       - 'true'
       - 'false'
     Default: 'true'
-    Description: >-
-      To include a banner to be displayed when connecting via SSH to the
+    Description: To include a banner to be displayed when connecting via SSH to the
       bastion, set this parameter to true
     Type: String
   EnableTCPForwarding:
@@ -171,13 +169,11 @@ Parameters:
       - 'true'
       - 'false'
   KeyPairName:
-    Description: >-
-      Enter a Public/private key pair. If you do not have one in this AWS Region,
+    Description: Enter a Public/private key pair. If you do not have one in this AWS Region,
       create it before continuing
     Type: 'AWS::EC2::KeyPair::KeyName'
   RemoteAccessCIDR:
-    AllowedPattern: >-
-      ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Description: Allowed CIDR block in the x.x.x.x/x format for external SSH access to the bastion host
     Type: String
@@ -235,8 +231,7 @@ Parameters:
       - multi-node
     ConstraintDescription: must be single-node or multi-node.
   NumberOfNodes:
-    Description: >-
-      The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
+    Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
     Type: Number
     Default: '2'
   NodeType:
@@ -249,24 +244,20 @@ Parameters:
       - ds2.xlarge
       - ds2.8xlarge
   MasterUsername:
-    Description: >-
-      The user name that is associated with the master user account for the cluster that is being created
+    Description: The user name that is associated with the master user account for the cluster that is being created
     Type: String
     Default: rsadmin
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: >-
-      The password that is associated with the master user account for the cluster that is being created. Example: Welcome123
+    Description: 'The password that is associated with the master user account for the cluster that is being created. Example: Welcome123'
     Type: String
     Default: Welcome123
     NoEcho: 'true'
     MinLength: '4'
     MaxLength: '64'
-    AllowedPattern: >-
-     ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: >-
-     Must contain only alphanumeric characters. Example: Welcome123
+    AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
+    ConstraintDescription: 'Must contain only alphanumeric characters. Example: Welcome123'
   Maintenancewindow:
     Description: Maintenance Window for Redshift Cluster
     Type: String
