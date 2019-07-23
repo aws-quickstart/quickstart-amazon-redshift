@@ -621,7 +621,6 @@ Resources:
         Protocol: email
   DiskSpacealarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
-    DependsOn: RedshiftCluster
     Properties:
       MetricName: !Join 
         - ''
@@ -645,7 +644,6 @@ Resources:
       Unit: Percent
   HighCPUutilizationalarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
-    DependsOn: RedshiftCluster
     Condition: IsProd
     Properties:
       MetricName: !Join 
