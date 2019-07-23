@@ -30,8 +30,7 @@ Parameters:
       - multi-node
     ConstraintDescription: must be single-node or multi-node.
   NumberOfNodes:
-    Description: >-
-      The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
+    Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
     Type: Number
     Default: '2'
   NodeType:
@@ -44,24 +43,20 @@ Parameters:
       - ds2.xlarge
       - ds2.8xlarge
   MasterUsername:
-    Description: >-
-      The user name that is associated with the master user account for the cluster that is being created
+    Description: The user name that is associated with the master user account for the cluster that is being created
     Type: String
     Default: rsadmin
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: >-
-      The password that is associated with the master user account for the cluster that is being created. Example: Welcome123
+    Description: 'The password that is associated with the master user account for the cluster that is being created. Example: Welcome123'
     Type: String
     Default: Welcome123
     NoEcho: 'true'
     MinLength: '4'
     MaxLength: '64'
-    AllowedPattern: >-
-     ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: >-
-     Must contain only alphanumeric characters. Example: Welcome123
+    AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
+    ConstraintDescription: 'Must contain only alphanumeric characters. Example: Welcome123'
   Maintenancewindow:
     Description: Maintenance Window for Redshift Cluster
     Type: String
