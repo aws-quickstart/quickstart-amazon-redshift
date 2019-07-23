@@ -278,7 +278,7 @@ Parameters:
   EncryptionAtRest:
     Description: "Do you want to encrypt database at rest?"
     Type: String
-    Default: 'false'
+    Default: false
     AllowedValues:
       - true
       - false
