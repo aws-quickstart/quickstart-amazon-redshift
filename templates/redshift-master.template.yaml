@@ -16,10 +16,10 @@ Metadata:
           - MasterUsername
           - MasterUserPassword
           - NotificationList 
-      -
-        Label:
+      - Label:
           default: Redshift additional/optional Parameters
         Parameters:
+          - LogsRetentionInDays
           - EnableLoggingToS3
           - MaxConcurrentCluster
           - EncryptionAtRest
@@ -29,8 +29,7 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
-      -
-        Label:
+      - Label:
           default: Mandatory Tags
         Parameters:
           - TagEnvironment
@@ -41,16 +40,12 @@ Metadata:
           - TagConfidentiality
           - TagCompliance
       - Label:
-          default: Amazon EC2 Configuration
+          default: Linux Bastion Configuration
         Parameters:
           - RemoteAccessCIDR
           - KeyPairName
           - EnableBastion
           - BastionInstanceType
-          - LogsRetentionInDays
-      - Label:
-          default: Linux Bastion Configuration
-        Parameters:
           - BastionTenancy
           - EnableBanner
           - BastionBanner
