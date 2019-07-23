@@ -1,42 +1,26 @@
-###########################################################################
-# Author: Sudhir Gupta
-# Date: 26-Jun-2019
-# Version: 1.1
-###########################################################################
-
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFormation Template to create Amazon Redshift Cluster'
-
-###############################################################################
-# Parameters 
-###############################################################################   
-
+Description: "Amazon Redshift July,23,2019"
 Parameters:
-
   ParentVPCStack:
     Description: 'Provide Stack name of parent VPC stack based on VPC-3AZs yaml template. Refer Cloudformation dashboard in AWS Console to get this.'
     Type: String
     MinLength: '1'
     MaxLength: '128'
     AllowedPattern: '^[a-zA-Z]+[0-9a-zA-Z\-]*$'
-    
   ParentSSHBastionStack:
     Description: 'Optional - Provide Stack name of parent Amazon Linux bastion host stack based on linux-bastion template. Refer Cloudformation dashboard in AWS Console to get this.'
     Type: String
     MinLength: '0'
     MaxLength: '128'
-    
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created
     Type: String
     Default: rsdev01
     AllowedPattern: '([a-z]|[0-9])+' 
-    
   RedshiftClusterPort:
     Description: The port number on which the cluster accepts incoming connections.
     Type: Number
     Default: '8200'
-  
   ClusterType:
     Description: The type of cluster
     Type: String
@@ -45,13 +29,11 @@ Parameters:
       - single-node
       - multi-node
     ConstraintDescription: must be single-node or multi-node.
-  
   NumberOfNodes:
     Description: >-
       The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
     Type: Number
     Default: '2'
-  
   NodeType:
     Description: The type of node to be provisioned
     Type: String
@@ -61,7 +43,6 @@ Parameters:
       - dc2.8xlarge
       - ds2.xlarge
       - ds2.8xlarge
-  
   MasterUsername:
     Description: >-
       The user name that is associated with the master user account for the cluster that is being created
@@ -69,7 +50,6 @@ Parameters:
     Default: rsadmin
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
-  
   MasterUserPassword:
     Description: >-
       The password that is associated with the master user account for the cluster that is being created. Example: Welcome123
@@ -82,17 +62,14 @@ Parameters:
      ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
     ConstraintDescription: >-
      Must contain only alphanumeric characters. Example: Welcome123
-  
   Maintenancewindow:
     Description: Maintenance Window for Redshift Cluster
     Type: String
     Default: 'sat:05:00-sat:05:30'
-        
   MaxConcurrentCluster:
     Description: Maximum Concurrency Scaling Redshift Clusters
     Type: String
     Default: '1'
-    
   EncryptionAtRest:
     Description: "Do you want to encrypt database at rest?"
     Type: String
@@ -101,27 +78,22 @@ Parameters:
       - true
       - false
     ConstraintDescription: must be true or false.
-  
   kmskey:
     Description: Existing KMS key ID
     Type: String
     Default: ''
-    
   SnapshotIdentifier:
     Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
     Type: String
-    
   SnapshotAccountNumber:
     Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
     Type: String
-    
   NotificationList:
     Type: String
     Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm and event notifications
     Default: "abc@xyz.com"
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     ConstraintDescription: provide a valid email address.
-    
   EnableLoggingToS3:
     Default: 'false'
     Type: String
@@ -129,26 +101,18 @@ Parameters:
       - true
       - false
     Description: "Do you want to enable logging to S3 bucket?"
-    
   S3BucketForRedshiftIAMRole:
     Type: String
     Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
-
   GlueCatalogDatabase:
     Type: String
     Description: "Enter name for your Glue Catalog database"
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
-  
-###########################################################################
-# Mandatory tags that will be added to all resources that support tags
-###########################################################################
-  
   TagName:
     Type: String
     Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
     Default: 'Lab'
-
   TagEnvironment:
     Type: String
     AllowedValues:
@@ -158,7 +122,6 @@ Parameters:
       - Production
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     Default: 'Development'
-    
   TagTier:
     Type: String
     AllowedValues:
@@ -167,18 +130,15 @@ Parameters:
       - application
     Description: The tier key is used to designate the functional tier of the associated AWS resource.
     Default: 'data'
-
   TagProjectCostCenter:
     Type: String
     Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
     AllowedPattern: "^[a-zA-Z0-9]+$"
     Default: '12345'
     ConstraintDescription:  provide a valid cost center
-     
   TagOwner:
     Type: String
     Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
-    
   TagConfidentiality:
     Type: String
     Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
@@ -188,7 +148,6 @@ Parameters:
       - confidential
       - pii/phi
     Default: 'private'
-    
   TagCompliance:
     Type: String
     Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.
@@ -199,11 +158,6 @@ Parameters:
       - other
       - none
     Default: 'none'
-    
-###############################################################################
-# Parameter groups
-###############################################################################
-
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -269,11 +223,6 @@ Metadata:
         default: AWS Account number where the above snapshot was taken
       ParentSSHBastionStack:
         default: ParentSSHBastionStack (Optional)
-       
-###############################################################################
-# Mappings
-###############################################################################
- 
 Mappings:
   RedshiftLoggingAccountIDRegionMap:
     us-east-1:
@@ -316,11 +265,6 @@ Mappings:
       RSAccountID: 729911121831
     sa-east-1:
       RSAccountID: 075028567923
-    
-###############################################################################
-# Conditions
-############################################################################### 
-
 Conditions:
   IsMultiNodeCluster: !Equals [!Ref ClusterType, 'multi-node']
   IsProd: !Equals [!Ref TagEnvironment, 'Production']
@@ -352,13 +296,7 @@ Conditions:
     - Fn::Equals:
       - ''
       - Ref: SnapshotAccountNumber
-    
-###############################################################################
-# Resources 
-###############################################################################   
-    
 Resources:
-
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -434,7 +372,6 @@ Resources:
         -
           Key: Compliance
           Value: !Ref TagCompliance
-                                 
   RedshiftLoggingS3Bucket:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
@@ -470,7 +407,6 @@ Resources:
         -
           Key: Compliance
           Value: !Ref TagCompliance
-            
   RedshiftLoggingS3BucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Condition: IsEnableLoggingToS3
@@ -488,7 +424,6 @@ Resources:
           Effect: Allow
           Action: 's3:PutObject'
           Resource: !Sub '${RedshiftLoggingS3Bucket.Arn}/AWSLogs/*'
-            
   RedshiftClusterParameterGroup:
     Type: 'AWS::Redshift::ClusterParameterGroup'
     Properties:
@@ -529,7 +464,6 @@ Resources:
         -
           Key: Compliance
           Value: !Ref TagCompliance
-                      
   RedshiftClusterSubnetGroup:
     Type: 'AWS::Redshift::ClusterSubnetGroup'
     Properties:
@@ -557,7 +491,6 @@ Resources:
         -
           Key: Compliance
           Value: !Ref TagCompliance
-
   RedshiftCluster:
     Type: 'AWS::Redshift::Cluster'
     DeletionPolicy: Snapshot
@@ -614,7 +547,6 @@ Resources:
         -
           Key: Compliance
           Value: !Ref TagCompliance
-             
   GlueCatalogDB:
     Condition: IsGlueCatalogName
     Type: 'AWS::Glue::Database'
@@ -623,7 +555,6 @@ Resources:
       DatabaseInput:
           Name: !Ref GlueCatalogDatabase
           Description: !Join [ " ", ["AWS Glue Catalog database from Stack ", !Ref 'AWS::StackName'] ]
-
   MyRedshiftIAMRole:
     Type: 'AWS::IAM::Role'
     Condition: IsConfigureRedshiftIAMRole
@@ -683,14 +614,12 @@ Resources:
                     - logs:*
                 Resource:
                     - "*"
-        
   SNSTopic:
     Type: AWS::SNS::Topic
     Properties:
       Subscription:
       - Endpoint: !Ref NotificationList
         Protocol: email
-            
   DiskSpacealarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
     DependsOn: RedshiftCluster
@@ -715,7 +644,6 @@ Resources:
           Value: !Ref RedshiftCluster
       ComparisonOperator: GreaterThanThreshold
       Unit: Percent
-      
   HighCPUutilizationalarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
     DependsOn: RedshiftCluster
@@ -741,7 +669,6 @@ Resources:
           Value: !Ref RedshiftCluster
       ComparisonOperator: GreaterThanThreshold
       Unit: Percent
-      
   HighReadLatencyalarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
     Condition: IsProd
@@ -767,32 +694,23 @@ Resources:
           Value: !Ref RedshiftCluster
       ComparisonOperator: GreaterThanThreshold
       Unit: Percent
-
-###############################################################################
-# Outputs 
-###############################################################################   
 Outputs:
-
   TemplateID:
     Description: 'Template ID'
     Value: 'VPC-SSH-Bastion'
-    
   StackName:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
-
   RedshiftClusterEndpoint:
     Description: Redshift Cluster endpoint
     Value: !Sub "${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}"
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterEndpoint'
-    
   RedshiftParameterGroupName:
     Description: Name of the Redshift Parameter Group
     Value: !Ref RedshiftClusterParameterGroup
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftParameterGroupName'
-    
   RedshiftDatabaseName:
     Description: Name of the Redshift Database
     Value: !If 
@@ -801,40 +719,34 @@ Outputs:
               - !Ref DatabaseName
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftDatabaseName'
-    
   RedshiftUsername:
     Value: !Ref MasterUsername
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftUsername'
-    
   RedshiftLoggingS3Bucket:
     Description: Name of S3 bucket created for Redshift Logging
     Condition: IsEnableLoggingToS3
     Value: !Ref RedshiftLoggingS3Bucket
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftLoggingS3Bucket'
-      
   RedshiftClusterIAMRole:
     Description: IAM Role assigned to Redshift cluster
     Condition: IsConfigureRedshiftIAMRole
     Value: !GetAtt MyRedshiftIAMRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterIAMRole'
-      
   S3BucketForRedshiftIAMRole:
     Description: IAM Role assigned to Redshift cluster
     Condition: IsConfigureRedshiftIAMRole
     Value: !Ref S3BucketForRedshiftIAMRole
     Export:
       Name: !Sub '${AWS::StackName}-S3BucketForRedshiftIAMRole'
-
   GlueCatalogDBName:
     Description: Name of the AWS Glue Catalog Database
     Condition: IsGlueCatalogName
     Value: !Ref GlueCatalogDB
     Export:
       Name: !Sub '${AWS::StackName}-GlueCatalogDBName'
-    
   PSQLCommandLine:    
     Description: PSQL Command Line
     Value: !Join
