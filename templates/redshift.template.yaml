@@ -380,9 +380,9 @@ Resources:
         Rules:
         - Id: RedshiftLogsArchivingToGlacier
           Status: Enabled
-          ExpirationInDays: '30'
+          ExpirationInDays: 30
           Transitions:
-            - TransitionInDays: '14'
+            - TransitionInDays: 14
               StorageClass: Glacier
       Tags:
         -
