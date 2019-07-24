@@ -85,9 +85,11 @@ Parameters:
   SnapshotIdentifier:
     Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
     Type: String
+    Default: ''
   SnapshotAccountNumber:
     Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
     Type: String
+    Default: ''
   NotificationList:
     Type: String
     Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm and event notifications
@@ -104,7 +106,9 @@ Parameters:
   S3BucketForRedshiftIAMRole:
     Type: String
     Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
+    Default: ''
   GlueCatalogDatabase:
+    Default: ''
     Type: String
     Description: "Enter name for your Glue Catalog database"
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'

@@ -155,6 +155,7 @@ Parameters:
     Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm notifications
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     ConstraintDescription: provide a valid email address.  
+    Default: 'ops@company.com'
   BastionBanner:
     Default: https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt
     Description: Banner text to display upon login. Use default or provide AWS S3 location for the file containing Banner text.
@@ -273,13 +274,13 @@ Parameters:
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: 'The password that is associated with the master user account for the cluster that is being created. Example: Welcome123'
+    Description: The password that is associated with the master user account for the cluster that is being created.
     Type: String
     NoEcho: 'true'
     MinLength: '4'
     MaxLength: '64'
     AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: 'Must contain only alphanumeric characters. Example: Welcome123'
+    ConstraintDescription: Must contain only alphanumeric characters.
   Maintenancewindow:
     Description: Maintenance Window for Redshift Cluster
     Type: String
@@ -303,9 +304,11 @@ Parameters:
   SnapshotIdentifier:
     Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
     Type: String
+    Default: ''
   SnapshotAccountNumber:
     Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
     Type: String
+    Default: ''
   EnableLoggingToS3:
     Default: false
     Type: String
@@ -316,10 +319,12 @@ Parameters:
   S3BucketForRedshiftIAMRole:
     Type: String
     Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
+    Default: ''
   GlueCatalogDatabase:
     Type: String
     Description: "Enter name for your Glue Catalog database"
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
+    Default: ''
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
   TagName:
     Type: String
@@ -429,7 +434,7 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
         ParentVPCStack:
