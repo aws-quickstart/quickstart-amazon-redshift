@@ -87,7 +87,7 @@ Metadata:
         default: Key Pair Name
       RemoteAccessCIDR:
         default: Allowed Bastion External Access CIDR
-      AltInitScript:
+      AlternativeInitializationScript:
         default: Custom Bootstrap Script
       NotificationList:
         default: SNS Notification Email
@@ -212,7 +212,7 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Description: Allowed CIDR block in the x.x.x.x/x format for external SSH access to the bastion host
     Type: String
-  AltInitScript:
+  AlternativeInitializationScript:
     AllowedPattern: ^http.*|^$
     ConstraintDescription: URL must begin with http
     Description: Optional. Specify custom bootstrap script AWS S3 location to run during bastion host setup
@@ -417,7 +417,7 @@ Resources:
         EnableBanner: !Ref EnableBanner
         BastionTenancy: !Ref BastionTenancy
         BastionInstanceType: !Ref BastionInstanceType
-        AltInitScript: !Ref AltInitScript
+        AlternativeInitializationScript: !Ref AlternativeInitializationScript
         EnableX11Forwarding: !Ref EnableX11Forwarding
         PublicSubnet1ID: !GetAtt 
           - VPCStack
