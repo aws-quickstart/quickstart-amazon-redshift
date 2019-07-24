@@ -437,16 +437,6 @@ Resources:
         - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        ParentVPCStack:
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.StackName
-        ParentSSHBastionStack: !If 
-          - EnableBastionAccess
-          - Fn::GetAtt:
-            - BastionStack
-            - Outputs.StackName
-          - ''
         VPCCIDR: !Ref VPCCIDR
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
