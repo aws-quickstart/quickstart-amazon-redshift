@@ -54,14 +54,13 @@ Parameters:
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: 'The password that is associated with the master user account for the cluster that is being created. Example: Welcome123'
+    Description: The password that is associated with the master user account for the cluster that is being created.
     Type: String
-    Default: Welcome123
     NoEcho: 'true'
     MinLength: '4'
     MaxLength: '64'
     AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: 'Must contain only alphanumeric characters. Example: Welcome123'
+    ConstraintDescription: Must contain only alphanumeric characters.
   Maintenancewindow:
     Description: Maintenance Window for Redshift Cluster
     Type: String
