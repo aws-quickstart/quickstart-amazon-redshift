@@ -6,6 +6,7 @@ Metadata:
       - Label:
           default: AWS VPC Configuration
         Parameters:
+        - VPCCIDR
         - AvailabilityZones
         - PrivateSubnet1CIDR
         - PrivateSubnet2CIDR
@@ -46,9 +47,9 @@ Metadata:
       - Label:
           default: Linux Bastion Configuration
         Parameters:
+          - EnableBastion
           - RemoteAccessCIDR
           - KeyPairName
-          - EnableBastion
           - BastionInstanceType
           - BastionTenancy
           - EnableBanner
