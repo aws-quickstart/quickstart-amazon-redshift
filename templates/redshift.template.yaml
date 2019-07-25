@@ -362,7 +362,7 @@ Resources:
         - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/generateid.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        Param1: !Ref Param1
+        Param1: !Ref 'AWS::StackName'
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
