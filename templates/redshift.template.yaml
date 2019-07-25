@@ -5,11 +5,10 @@ Parameters:
     Description: "ID of the VPC you are deploying Redshift into (e.g., vpc-0343606e)."
     Type: 'AWS::EC2::VPC::Id'
     Default: ''
-  VPCCIDR:
-    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(1[6-9]|2[0-8]))$
-    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
-    Default: 10.0.0.0/16
-    Description: CIDR block for the VPC.
+  RemoteAccessCIDR:
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: Allowed CIDR block to access Redshift cluster.
     Type: String
   Subnet1ID:
     Description: The ID of the private subnet in Availability Zone 1.
@@ -26,14 +25,6 @@ Parameters:
     Description: The port number on which the cluster accepts incoming connections.
     Type: Number
     Default: '8200'
-  ClusterType:
-    Description: The type of cluster
-    Type: String
-    Default: multi-node
-    AllowedValues:
-      - single-node
-      - multi-node
-    ConstraintDescription: must be single-node or multi-node.
   NumberOfNodes:
     Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
     Type: Number
@@ -121,7 +112,7 @@ Parameters:
     AllowedValues:
       - Development
       - Test
-      - Pre-prod
+      - Pre-production
       - Production
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     Default: 'Development'
@@ -175,7 +166,6 @@ Metadata:
       - Label:
           default: Redshift Cluster Parameters
         Parameters:
-          - ClusterType
           - NodeType
           - NumberOfNodes
           - RedshiftClusterPort
@@ -207,6 +197,24 @@ Metadata:
           - TagConfidentiality
           - TagCompliance
     ParameterLabels:
+      DatabaseName:
+        default: Redshift Database Name
+      RedshiftClusterPort:
+        default: Redshift Cluster Port
+      NodeType:
+        default: Node Type for Redshift Cluster
+      NumberOfNodes:
+        default: Number Of Nodes in Redshift Cluster
+      MasterUsername:
+        default: Redshift Master User Name
+      MasterUserPassword:
+        default: Redshift Master User Password
+      S3BucketForRedshiftIAMRole:
+        default: Amazon S3 Bucket for Redshift IAM Role 
+      NotificationList:
+        default: Email address for SNS notification
+      RedshiftMaintenancewindow:
+        default: Redshift Maintenance window
       EnableLoggingToS3:
         default: Do you want to enable Redshift logging to Amazon S3 bucket?
       MaxConcurrentCluster:
@@ -214,13 +222,58 @@ Metadata:
       EncryptionAtRest:
         default: Do you want to encrypt Redshift database at-rest?
       kmskey:
-        default: KMS key for encrypting Redshift database
+        default: KMS Key for Encrypting Redshift database at-rest
       SnapshotIdentifier:
         default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
       SnapshotAccountNumber:
-        default: AWS Account number where the above snapshot was taken
+        default: AWS Account-ID where the Redshift snapshot was created
 Mappings:
+  QuicksightIPRegionMap:
+    us-gov-west-1:
+      QuicksightCIDR: xx
+    us-east-1:
+      QuicksightCIDR: 52.23.63.224/27
+    us-east-2:
+      QuicksightCIDR: 52.15.247.160/27
+    us-west-1:
+      QuicksightCIDR: xx
+    us-west-2:
+      QuicksightCIDR: 54.70.204.128/27
+    ap-east-1:
+      QuicksightCIDR: xx
+    ap-south-1:
+      QuicksightCIDR: xx
+    ap-northeast-3:
+      QuicksightCIDR: xx
+    ap-northeast-2:
+      QuicksightCIDR: xx
+    ap-southeast-1:
+      QuicksightCIDR: 13.229.254.0/27
+    ap-southeast-2:
+      QuicksightCIDR: 54.153.249.96/27
+    ap-northeast-1:
+      QuicksightCIDR: 13.113.244.32/27
+    ca-central-1:
+      QuicksightCIDR: xx
+    cn-north-1:
+      QuicksightCIDR: xx
+    cn-northwest-1:
+      QuicksightCIDR: xx
+    eu-west-1:
+      QuicksightCIDR: 52.210.255.224/27
+    eu-central-1:
+      QuicksightCIDR: xx
+    eu-west-2:
+      QuicksightCIDR: xx
+    eu-west-3:
+      QuicksightCIDR: xx
+    eu-north-1:
+      QuicksightCIDR: xx
+    sa-east-1:
+      QuicksightCIDR: xx
   RedshiftLoggingAccountIDRegionMap:
+    us-gov-west-1:
+      RSAccountID: xx
     us-east-1:
       RSAccountID: 193672423079
     us-east-2:
@@ -262,10 +315,22 @@ Mappings:
     sa-east-1:
       RSAccountID: 075028567923
 Conditions:
-  IsMultiNodeCluster: !Equals [!Ref ClusterType, 'multi-node']
+  IsQuicksightIP:
+    Fn::Not:
+    - Fn::Equals:
+      - xx
+      - !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
+  IsGovCloud: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
+  RedshiftSingleNodeClusterCondition:
+    Fn::Equals:
+    - Ref: NumberOfNodes
+    - '1'
   IsProd: !Equals [!Ref TagEnvironment, 'Production']
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
-  IsEnableLoggingToS3: !Equals [!Ref EnableLoggingToS3, 'true']
+  IsEnableLoggingToS3: !And
+     - !Equals [!Ref EnableLoggingToS3, 'true']
+     - !Not [!Condition IsGovCloud]
+  
   IsConfigureRedshiftIAMRole: 
     Fn::Not:
     - Fn::Equals:
@@ -287,17 +352,33 @@ Conditions:
       - ''
       - Ref: SnapshotAccountNumber
 Resources:
+  GenerateIdStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub 
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/generateid.template.yaml
+        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
+      Parameters:
+        Param1: !Ref Param1
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: !Join [ " ", [ !Ref 'AWS::StackName', " - Redshift Security Group" ] ]
+      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.UniqueID ] ]
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: !Ref RedshiftClusterPort
           ToPort: !Ref RedshiftClusterPort
-          CidrIp: !Ref VPCCIDR
-          Description: 'Redshift Access to VPC CIDR'  
+          CidrIp: !Ref RemoteAccessCIDR
+          Description: 'Redshift Access to VPC CIDR'
+        - !If
+            - IsQuicksightIP
+            - IpProtocol: tcp
+              FromPort: !Ref RedshiftClusterPort
+              ToPort: !Ref RedshiftClusterPort
+              CidrIp: !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
+              Description: 'Whitelisting QuickSight IPs: refer quicksight/latest/user/regions.html'     
+            - !Ref "AWS::NoValue"
       Tags:
         -
           Key: Name
@@ -378,11 +459,11 @@ Resources:
   RedshiftClusterParameterGroup:
     Type: 'AWS::Redshift::ClusterParameterGroup'
     Properties:
-      Description: !Join [ " ", [ !Ref 'AWS::StackName', " - Redshift Cluster Parameter group" ]] 
+      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.UniqueID ]]
       ParameterGroupFamily: redshift-1.0
       Parameters:
         - ParameterName: enable_user_activity_logging
-          ParameterValue: 'true'
+          ParameterValue: !If [IsProd, 'true', 'false']
         - ParameterName: require_ssl
           ParameterValue: 'true'
         - ParameterName: auto_analyze
@@ -449,9 +530,9 @@ Resources:
     DeletionPolicy: Snapshot
     UpdateReplacePolicy: Snapshot
     Properties:
-      ClusterType: !Ref ClusterType
-      ClusterIdentifier: !Join ["-", [!Ref 'AWS::StackName', !Ref DatabaseName]]
-      NumberOfNodes: !If [IsMultiNodeCluster, !Ref NumberOfNodes, !Ref "AWS::NoValue"]
+      ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
+      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.UniqueID]]
+      NumberOfNodes: !If [RedshiftSingleNodeClusterCondition, !Ref "AWS::NoValue", !Ref NumberOfNodes]
       NodeType: !Ref NodeType
       DBName: !Ref DatabaseName
       KmsKeyId: !If [IsEncryptionAtRest, !Ref kmskey, !Ref "AWS::NoValue"]
@@ -507,12 +588,12 @@ Resources:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
           Name: !Ref GlueCatalogDatabase
-          Description: !Join [ " ", ["AWS Glue Catalog database from Stack ", !Ref 'AWS::StackName'] ]
+          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.UniqueID] ]
   MyRedshiftIAMRole:
     Type: 'AWS::IAM::Role'
     Condition: IsConfigureRedshiftIAMRole
     Properties:
-      RoleName: !Join [ "-", [!Ref 'AWS::StackName', "RedshiftSpectrumRole"] ]
+      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.UniqueID ] ]
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -527,7 +608,7 @@ Resources:
       Path: "/"
       Policies:
         -
-          PolicyName: !Join [ "-", [!Ref 'AWS::StackName', "Spectrum-Glue-Access-Policy"] ]
+          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.UniqueID ] ]
           PolicyDocument:
             Version: "2012-10-17"
             Statement:

@@ -14,7 +14,6 @@ Metadata:
       - Label:
           default: Redshift Cluster Parameters
         Parameters:
-          - ClusterType
           - NodeType
           - NumberOfNodes
           - RedshiftClusterPort
@@ -57,6 +56,24 @@ Metadata:
           - EnableTCPForwarding
           - EnableX11Forwarding
     ParameterLabels:
+      DatabaseName:
+        default: Redshift Database Name
+      RedshiftClusterPort:
+        default: Redshift Cluster Port
+      NodeType:
+        default: Node Type for Redshift Cluster
+      NumberOfNodes:
+        default: Number Of Nodes in Redshift Cluster
+      MasterUsername:
+        default: Redshift Master User Name
+      MasterUserPassword:
+        default: Redshift Master User Password
+      S3BucketForRedshiftIAMRole:
+        default: Amazon S3 Bucket for Redshift IAM Role 
+      NotificationList:
+        default: Email address for SNS notification
+      RedshiftMaintenancewindow:
+        default: Redshift Maintenance window
       EnableLoggingToS3:
         default: Do you want to enable Redshift logging to Amazon S3 bucket?
       MaxConcurrentCluster:
@@ -64,11 +81,11 @@ Metadata:
       EncryptionAtRest:
         default: Do you want to encrypt Redshift database at-rest?
       kmskey:
-        default: KMS key for encrypting Redshift database
+        default: KMS Key for Encrypting Redshift database at-rest
       SnapshotIdentifier:
         default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
       SnapshotAccountNumber:
-        default: AWS Account number where the above snapshot was taken
+        default: AWS Account-ID where the Redshift snapshot was created
       EnableBastion:
         default: Do you want to create bastion stack? If not, ignore rest of EC2 parameters.
       BastionTenancy:
@@ -246,14 +263,6 @@ Parameters:
     Description: The port number on which the cluster accepts incoming connections.
     Type: Number
     Default: '8200'
-  ClusterType:
-    Description: The type of cluster
-    Type: String
-    Default: multi-node
-    AllowedValues:
-      - single-node
-      - multi-node
-    ConstraintDescription: must be single-node or multi-node.
   NumberOfNodes:
     Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
     Type: Number
@@ -440,7 +449,7 @@ Resources:
         VPCID: !GetAtt 
           - VPCStack
           - Outputs.VPCID
-        VPCCIDR: !Ref VPCCIDR
+        RemoteAccessCIDR: !Ref VPCCIDR
         Subnet1ID: !GetAtt 
           - VPCStack
           - Outputs.PrivateSubnet1AID
@@ -449,7 +458,6 @@ Resources:
           - Outputs.PrivateSubnet2AID
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
-        ClusterType: !Ref ClusterType
         NumberOfNodes: !Ref NumberOfNodes
         NodeType: !Ref NodeType
         MasterUsername: !Ref MasterUsername
@@ -471,3 +479,4 @@ Resources:
         TagProjectCostCenter: !Ref TagProjectCostCenter
         TagOwner: !Ref TagOwner
         TagCompliance: !Ref TagCompliance
+
