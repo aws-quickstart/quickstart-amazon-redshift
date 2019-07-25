@@ -163,6 +163,9 @@ Metadata:
           default: Network Configuration
         Parameters:
           - VPCID
+          - Subnet1ID
+          - Subnet2ID
+          - RemoteAccessCIDR
       - Label:
           default: Redshift Cluster Parameters
         Parameters:
