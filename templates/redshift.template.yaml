@@ -175,6 +175,9 @@ Metadata:
           default: Network Configuration
         Parameters:
           - VPCID
+          - Subnet1ID
+          - Subnet2ID
+          - RemoteAccessCIDR
       - Label:
           default: Redshift Cluster Parameters
         Parameters:
@@ -332,7 +335,7 @@ Conditions:
     - Fn::Equals:
       - xx
       - !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
-  IsGovCloud: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
+  GovCloudCondition: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
   RedshiftSingleNodeClusterCondition:
     Fn::Equals:
     - Ref: NumberOfNodes
@@ -341,7 +344,7 @@ Conditions:
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !And
      - !Equals [!Ref EnableLoggingToS3, 'true']
-     - !Not [!Condition IsGovCloud]
+     - !Not [!Condition GovCloudCondition]
   
   IsConfigureRedshiftIAMRole: 
     Fn::Not:
@@ -370,12 +373,10 @@ Resources:
       TemplateURL: !Sub 
         - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/generateid.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
-      Parameters:
-        Param1: !Ref 'AWS::StackName'
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.UniqueID ] ]
+      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -471,7 +472,7 @@ Resources:
   RedshiftClusterParameterGroup:
     Type: 'AWS::Redshift::ClusterParameterGroup'
     Properties:
-      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.UniqueID ]]
+      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.Outputs.UniqueID ]]
       ParameterGroupFamily: redshift-1.0
       Parameters:
         - ParameterName: enable_user_activity_logging
@@ -543,7 +544,7 @@ Resources:
     UpdateReplacePolicy: Snapshot
     Properties:
       ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
-      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.UniqueID]]
+      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.Outputs.UniqueID]]
       NumberOfNodes: !If [RedshiftSingleNodeClusterCondition, !Ref "AWS::NoValue", !Ref NumberOfNodes]
       NodeType: !Ref NodeType
       DBName: !Ref DatabaseName
@@ -600,12 +601,12 @@ Resources:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
           Name: !Ref GlueCatalogDatabase
-          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.UniqueID] ]
+          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.Outputs.UniqueID] ]
   MyRedshiftIAMRole:
     Type: 'AWS::IAM::Role'
     Condition: IsConfigureRedshiftIAMRole
     Properties:
-      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.UniqueID ] ]
+      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -620,7 +621,7 @@ Resources:
       Path: "/"
       Policies:
         -
-          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.UniqueID ] ]
+          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
