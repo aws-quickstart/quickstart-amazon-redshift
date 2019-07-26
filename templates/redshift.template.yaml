@@ -103,6 +103,18 @@ Parameters:
     Description: "Enter name for your Glue Catalog database"
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Default: aws-quickstart
+    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: String
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Default: quickstart-amazon-redshift/
+    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: String
   TagName:
     Type: String
     Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
@@ -323,7 +335,7 @@ Conditions:
     - Fn::Equals:
       - xx
       - !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
-  IsGovCloud: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
+  GovCloudCondition: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
   RedshiftSingleNodeClusterCondition:
     Fn::Equals:
     - Ref: NumberOfNodes
@@ -332,7 +344,7 @@ Conditions:
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !And
      - !Equals [!Ref EnableLoggingToS3, 'true']
-     - !Not [!Condition IsGovCloud]
+     - !Not [!Condition GovCloudCondition]
   
   IsConfigureRedshiftIAMRole: 
     Fn::Not:
@@ -364,7 +376,7 @@ Resources:
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.UniqueID ] ]
+      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -460,7 +472,7 @@ Resources:
   RedshiftClusterParameterGroup:
     Type: 'AWS::Redshift::ClusterParameterGroup'
     Properties:
-      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.UniqueID ]]
+      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.Outputs.UniqueID ]]
       ParameterGroupFamily: redshift-1.0
       Parameters:
         - ParameterName: enable_user_activity_logging
@@ -532,7 +544,7 @@ Resources:
     UpdateReplacePolicy: Snapshot
     Properties:
       ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
-      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.UniqueID]]
+      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.Outputs.UniqueID]]
       NumberOfNodes: !If [RedshiftSingleNodeClusterCondition, !Ref "AWS::NoValue", !Ref NumberOfNodes]
       NodeType: !Ref NodeType
       DBName: !Ref DatabaseName
@@ -589,12 +601,12 @@ Resources:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
           Name: !Ref GlueCatalogDatabase
-          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.UniqueID] ]
+          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.Outputs.UniqueID] ]
   MyRedshiftIAMRole:
     Type: 'AWS::IAM::Role'
     Condition: IsConfigureRedshiftIAMRole
     Properties:
-      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.UniqueID ] ]
+      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -609,7 +621,7 @@ Resources:
       Path: "/"
       Policies:
         -
-          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.UniqueID ] ]
+          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
