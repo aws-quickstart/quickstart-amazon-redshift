@@ -107,8 +107,6 @@ Metadata:
         default: Allowed Bastion External Access CIDR
       AlternativeInitializationScript:
         default: Custom Bootstrap Script
-      NotificationList:
-        default: SNS Notification Email
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
