@@ -243,49 +243,6 @@ Metadata:
       SnapshotAccountNumber:
         default: AWS Account-ID where the Redshift snapshot was created
 Mappings:
-  QuicksightIPRegionMap:
-    us-gov-west-1:
-      QuicksightCIDR: xx
-    us-east-1:
-      QuicksightCIDR: 52.23.63.224/27
-    us-east-2:
-      QuicksightCIDR: 52.15.247.160/27
-    us-west-1:
-      QuicksightCIDR: xx
-    us-west-2:
-      QuicksightCIDR: 54.70.204.128/27
-    ap-east-1:
-      QuicksightCIDR: xx
-    ap-south-1:
-      QuicksightCIDR: xx
-    ap-northeast-3:
-      QuicksightCIDR: xx
-    ap-northeast-2:
-      QuicksightCIDR: xx
-    ap-southeast-1:
-      QuicksightCIDR: 13.229.254.0/27
-    ap-southeast-2:
-      QuicksightCIDR: 54.153.249.96/27
-    ap-northeast-1:
-      QuicksightCIDR: 13.113.244.32/27
-    ca-central-1:
-      QuicksightCIDR: xx
-    cn-north-1:
-      QuicksightCIDR: xx
-    cn-northwest-1:
-      QuicksightCIDR: xx
-    eu-west-1:
-      QuicksightCIDR: 52.210.255.224/27
-    eu-central-1:
-      QuicksightCIDR: xx
-    eu-west-2:
-      QuicksightCIDR: xx
-    eu-west-3:
-      QuicksightCIDR: xx
-    eu-north-1:
-      QuicksightCIDR: xx
-    sa-east-1:
-      QuicksightCIDR: xx
   RedshiftLoggingAccountIDRegionMap:
     us-gov-west-1:
       RSAccountID: xx
@@ -330,11 +287,6 @@ Mappings:
     sa-east-1:
       RSAccountID: 075028567923
 Conditions:
-  IsQuicksightIP:
-    Fn::Not:
-    - Fn::Equals:
-      - xx
-      - !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
   GovCloudCondition: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
   RedshiftSingleNodeClusterCondition:
     Fn::Equals:
@@ -384,14 +336,6 @@ Resources:
           ToPort: !Ref RedshiftClusterPort
           CidrIp: !Ref RemoteAccessCIDR
           Description: 'Redshift Access to VPC CIDR'
-        - !If
-            - IsQuicksightIP
-            - IpProtocol: tcp
-              FromPort: !Ref RedshiftClusterPort
-              ToPort: !Ref RedshiftClusterPort
-              CidrIp: !FindInMap [QuicksightIPRegionMap, !Ref 'AWS::Region', QuicksightCIDR ]
-              Description: 'Whitelisting QuickSight IPs: refer quicksight/latest/user/regions.html'     
-            - !Ref "AWS::NoValue"
       Tags:
         -
           Key: Name
