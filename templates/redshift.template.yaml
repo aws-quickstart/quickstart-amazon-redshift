@@ -482,12 +482,12 @@ Resources:
         - ParameterName: auto_analyze
           ParameterValue: 'true'
         - ParameterName: statement_timeout
-          ParameterValue: '7200000'
+          ParameterValue: '43200000'
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
-          ParameterValue: "[ {\"query_group\" : [ ], \"query_group_wild_card\" : 0, \"user_group\" : [ ], \"user_group_wild_card\" : 0, \"concurrency_scaling\" : \"auto\", \"auto_wlm\" : true}, {\"short_query_queue\" : true} ]"
-      Tags: 
+          ParameterValue: "[ {\"query_group\" : [ ], \"query_group_wild_card\" : 0, \"user_group\" : [ ], \"user_group_wild_card\" : 0, \"concurrency_scaling\" : \"auto\", \"rules\" : [ { \"rule_name\" : \"DiskSpilling\", \"predicate\" : [ { \"metric_name\" : \"query_temp_blocks_to_disk\", \"operator\" : \">\",  \"value\" : 100000} ], \"action\" : \"log\", \"value\" : \"\"}, { \"rule_name\" : \"RowJoining\", \"predicate\" : [ { \"metric_name\" : \"join_row_count\", \"operator\" : \">\", \"value\" : 1000000000 } ], \"action\" : \"log\", \"value\" : \"\" } ], \"auto_wlm\" : true}, {\"short_query_queue\" : true} ]"
+      Tags:
         -
           Key: Name
           Value: !Join [ "-", [ !Ref TagName, !Ref 'AWS::StackName', "Primary Cluster Parameter group" ] ]
@@ -559,7 +559,7 @@ Resources:
       VpcSecurityGroupIds:
         - !Ref RedshiftSecurityGroup
       PreferredMaintenanceWindow: !Ref Maintenancewindow
-      AutomatedSnapshotRetentionPeriod: !If [IsProd, 35, 7]
+      AutomatedSnapshotRetentionPeriod: !If [IsProd, 35, 8]
       PubliclyAccessible: false
       ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
       LoggingProperties: !If 
@@ -700,37 +700,13 @@ Resources:
           - High-CPUUtilization
       AlarmDescription: !Join 
         - ''
-        - - CPUUtilization > 95% for last 30 min for cluster
-          - !Ref RedshiftCluster
-      Namespace: AWS/Redshift
-      Statistic: Average
-      Period: 900
-      EvaluationPeriods: 2
-      Threshold: 95
-      AlarmActions:
-        - !Ref SNSTopic
-      Dimensions:
-        - Name: ClusterIdentifier
-          Value: !Ref RedshiftCluster
-      ComparisonOperator: GreaterThanThreshold
-      Unit: Percent
-  HighReadLatencyalarmredshift:
-    Type: 'AWS::CloudWatch::Alarm'
-    Condition: IsProd
-    Properties:
-      MetricName: !Join 
-        - ''
-        - - !Ref RedshiftCluster
-          - High-ReadLatency
-      AlarmDescription: !Join 
-        - ''
-        - - ReadLatency is high for
+        - - CPUUtilization > 95% for last 15 min for cluster
           - !Ref RedshiftCluster
       Namespace: AWS/Redshift
       Statistic: Average
       Period: 300
       EvaluationPeriods: 3
-      Threshold: 0.3
+      Threshold: 95
       AlarmActions:
         - !Ref SNSTopic
       Dimensions:
