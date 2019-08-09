@@ -344,7 +344,7 @@ Resources:
                  - - !Ref TagName
                    - !Sub '${AWS::StackName}-RedshiftSecurityGroup'
         -
-          Key: Name
+          Key: Owner
           Value: !Ref TagOwner
         -
           Key: Environment
