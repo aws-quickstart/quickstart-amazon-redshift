@@ -13,7 +13,7 @@ Parameters:
     Description: The ID of the private subnet in Availability Zone 1 in your existing VPC.
     Type: 'AWS::EC2::Subnet::Id'
   Subnet2ID:
-    Description: The ID of the private subnet in Availability Zone 1 in your existing VPC.
+    Description: The ID of the private subnet in Availability Zone 2 in your existing VPC.
     Type: 'AWS::EC2::Subnet::Id'    
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created.
