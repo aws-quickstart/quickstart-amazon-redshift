@@ -76,21 +76,21 @@ Metadata:
       MasterUserPassword:
         default: Redshift master user password
       NotificationList:
-        default: Email address for SNS notification
+        default: SNS Notification Email
       RedshiftMaintenancewindow:
         default: Redshift Maintenance window
       EnableLoggingToS3:
-        default: Do you want to enable Redshift logging to Amazon S3 bucket?
+        default: Enable Redshift logging to S3
       MaxConcurrentCluster:
-        default: Max. number of Redshift concurrency scaling clusters
+        default: Max. number of concurrent clusters
       EncryptionAtRest:
-        default: Do you want to encrypt Redshift database at-rest?
+        default: Encryption at rest
       kmskey:
-        default: KMS key for encrypting Redshift database at-rest
+        default: KMS key ID
       SnapshotIdentifier:
         default: Redshift snapshot identifier
       SnapshotAccountNumber:
-        default: AWS account-ID where the Redshift snapshot was created
+        default: AWS account-ID of the Redshift Snapshot
       S3BucketForRedshiftIAMRole:
         default: Amazon S3 bucket for Redshift IAM role
       GlueCatalogDatabase:
@@ -215,7 +215,7 @@ Parameters:
       - m4.2xlarge
       - m4.4xlarge
     Default: t2.micro
-    Description: Amazon EC2 instance type for the bastion instance. t2 instance types are not supported for dedicated VPC tenancy (option below).
+    Description: Amazon EC2 instance type for the bastion instance. t2 instance types are not supported for dedicated VPC tenancy.
     Type: String
   EnableBanner:
     AllowedValues:
@@ -325,15 +325,17 @@ Parameters:
       - false
     ConstraintDescription: must be true or false.
   kmskey:
-    Description: The existing KMS key ID.
+    Description: The existing KMS key ID for encrypting Redshift database at-rest.
     Type: String
     Default: ''
   SnapshotIdentifier:
     Description: The Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
     Default: ''
+    Type: String
   SnapshotAccountNumber:
     Description: The AWS account number where the Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
     Default: ''
+    Type: String
   EnableLoggingToS3:
     Default: false
     Type: String
@@ -343,7 +345,7 @@ Parameters:
     Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
   S3BucketForRedshiftIAMRole:
     Type: String
-    Description: The existing S3 bucket contains dataset. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
+    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
     Default: ''
   GlueCatalogDatabase:
     Type: String
@@ -354,7 +356,7 @@ Parameters:
   TagName:
     Type: String
     Description: The unique friendly name as required by your company’s tagging strategy document, and which will be added to the environment tag.
-    Default: ''
+    Default: 'rs-QuickStart'
   TagEnvironment:
     Type: String
     AllowedValues:
