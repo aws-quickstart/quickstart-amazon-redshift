@@ -47,7 +47,7 @@ Parameters:
     Description: The password that is associated with the master user account for the cluster that is being created.
     Type: String
     NoEcho: 'true'
-    MinLength: '4'
+    MinLength: '8'
     MaxLength: '64'
     AllowedPattern:  >-
      ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
