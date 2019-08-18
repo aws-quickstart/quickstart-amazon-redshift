@@ -2,22 +2,21 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: "Amazon Redshift July,23,2019"
 Parameters:
   VPCID: 
-    Description: "ID of the VPC you are deploying Redshift into (e.g., vpc-0343606e)."
+    Description: The ID of your existing VPC that you’re deploying Redshift into.
     Type: 'AWS::EC2::VPC::Id'
-    Default: ''
   RemoteAccessCIDR:
     AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
     Description: Allowed CIDR block to access Redshift cluster.
     Type: String
   Subnet1ID:
-    Description: The ID of the private subnet in Availability Zone 1.
+    Description: The ID of the private subnet in Availability Zone 1 in your existing VPC.
     Type: 'AWS::EC2::Subnet::Id'
   Subnet2ID:
-    Description: The ID of the private subnet in Availability Zone 2.
+    Description: The ID of the private subnet in Availability Zone 2 in your existing VPC.
     Type: 'AWS::EC2::Subnet::Id'    
   DatabaseName:
-    Description: The name of the first database to be created when the cluster is created
+    Description: The name of the first database to be created when the cluster is created.
     Type: String
     Default: rsdev01
     AllowedPattern: '([a-z]|[0-9])+' 
@@ -48,20 +47,22 @@ Parameters:
     Description: The password that is associated with the master user account for the cluster that is being created.
     Type: String
     NoEcho: 'true'
-    MinLength: '4'
+    MinLength: '8'
     MaxLength: '64'
-    AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: Must contain only alphanumeric characters.
+    AllowedPattern:  >-
+     ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
+    ConstraintDescription: >-
+     Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   Maintenancewindow:
-    Description: Maintenance Window for Redshift Cluster
+    Description: The maintenance window for the Redshift cluster.
     Type: String
     Default: 'sat:05:00-sat:05:30'
   MaxConcurrentCluster:
-    Description: Maximum Concurrency Scaling Redshift Clusters
+    Description: The maximum number of concurrency scaling Redshift clusters.
     Type: String
     Default: '1'
   EncryptionAtRest:
-    Description: "Do you want to encrypt database at rest?"
+    Description: Enables or disables encryption at rest of the Redshift database.
     Type: String
     Default: false
     AllowedValues:
@@ -69,38 +70,38 @@ Parameters:
       - false
     ConstraintDescription: must be true or false.
   kmskey:
-    Description: Existing KMS key ID
-    Type: String
-    Default: ''
-  SnapshotIdentifier:
-    Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
-    Type: String
-    Default: ''
-  SnapshotAccountNumber:
-    Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
+    Description: The existing KMS key ID for encrypting Redshift database at-rest.
     Type: String
     Default: ''
   NotificationList:
     Type: String
-    Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm and event notifications
-    Default: "abc@xyz.com"
+    Description: The email notification list that is used to configure an SNS topic for sending CloudWatch alarm and event notifications.
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    ConstraintDescription: provide a valid email address.
+    ConstraintDescription: provide a valid email address.  
+    Default: 'ops@company.com'
+  SnapshotIdentifier:
+    Description: The Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
+    Default: ''
+    Type: String
+  SnapshotAccountNumber:
+    Description: The AWS account number where the Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
+    Default: ''
+    Type: String
   EnableLoggingToS3:
     Default: false
     Type: String
     AllowedValues:
       - true
       - false
-    Description: "Do you want to enable logging to S3 bucket?"
+    Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
   S3BucketForRedshiftIAMRole:
     Type: String
-    Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
+    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
     Default: ''
   GlueCatalogDatabase:
     Default: ''
     Type: String
-    Description: "Enter name for your Glue Catalog database"
+    Description: The name of your Glue Data Catalog database.
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
   QSS3BucketName:
@@ -117,16 +118,16 @@ Parameters:
     Type: String
   TagName:
     Type: String
-    Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
-    Default: 'Lab'
+    Description: The unique friendly name as required by your company’s tagging strategy document, and which will be added to the environment tag.
+    Default: 'redshift'
   TagEnvironment:
     Type: String
     AllowedValues:
       - Development
-      - Test
-      - Pre-production
+      - test
+      - pre-prod
       - Production
-    Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
+    Description: The environment tag that is used to designate the environment stage of the associated AWS resource.
     Default: 'Development'
   TagTier:
     Type: String
@@ -134,20 +135,21 @@ Parameters:
       - data
       - web
       - application
-    Description: The tier key is used to designate the functional tier of the associated AWS resource.
+    Description: The functional tier of the associated AWS resource.
     Default: 'data'
   TagProjectCostCenter:
     Type: String
-    Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
+    Description: The cost center associated with the project of the given AWS resource.
     AllowedPattern: "^[a-zA-Z0-9]+$"
     Default: '12345'
     ConstraintDescription:  provide a valid cost center
   TagOwner:
     Type: String
-    Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
+    Description: The email address of business owners who are associated with the given AWS resource, for sending outage or maintenance notifications.
+    Default: 'ops@company.com'
   TagConfidentiality:
     Type: String
-    Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
+    Description: The confidentiality classification of the data that is associated with the resource.
     AllowedValues:
       - public
       - private
@@ -156,7 +158,7 @@ Parameters:
     Default: 'private'
   TagCompliance:
     Type: String
-    Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.
+    Description: The compliance level for the AWS resource.
     AllowedValues:
       - hipaa
       - sox
@@ -168,18 +170,14 @@ Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
-          default: Environment
-        Parameters:
-          - TagEnvironment
-      - Label:
-          default: Network Configuration
+          default: VPC Network Configuration
         Parameters:
           - VPCID
           - Subnet1ID
           - Subnet2ID
           - RemoteAccessCIDR
       - Label:
-          default: Redshift Cluster Parameters
+          default: Amazon Redshift configuration
         Parameters:
           - NodeType
           - NumberOfNodes
@@ -187,9 +185,10 @@ Metadata:
           - DatabaseName
           - MasterUsername
           - MasterUserPassword
+          - NotificationList
       -
         Label:
-          default: Redshift additional/optional Parameters
+          default: Amazon Redshift advanced configuration
         Parameters:
           - EnableLoggingToS3
           - MaxConcurrentCluster
@@ -200,48 +199,84 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
-          - NotificationList
       -
         Label:
-          default: Mandatory Tags
+          default: Tag identifiers
         Parameters:
+          - TagEnvironment
           - TagName
           - TagOwner
           - TagTier       
           - TagProjectCostCenter
           - TagConfidentiality
           - TagCompliance
+      - 
+        Label:
+          default: AWS Quick Start configuration
+        Parameters:
+          - QSS3BucketName
+          - QSS3KeyPrefix
     ParameterLabels:
+      VPCID:
+        default: VPC ID
+      Subnet1ID:
+        default: Private subnet 1 ID
+      Subnet2ID:
+        default: Private subnet 2 ID
+      RemoteAccessCIDR:
+        default: Permitted IP range
       DatabaseName:
-        default: Redshift Database Name
+        default: Redshift database name
       RedshiftClusterPort:
-        default: Redshift Cluster Port
+        default: Redshift cluster port
       NodeType:
-        default: Node Type for Redshift Cluster
+        default: Node type for Redshift cluster
       NumberOfNodes:
-        default: Number Of Nodes in Redshift Cluster
+        default: Number of nodes in Redshift cluster
       MasterUsername:
-        default: Redshift Master User Name
+        default: Redshift master user name
       MasterUserPassword:
-        default: Redshift Master User Password
+        default: Redshift Master user password
       S3BucketForRedshiftIAMRole:
-        default: Amazon S3 Bucket for Redshift IAM Role 
+        default: Amazon S3 bucket for Redshift IAM role
       NotificationList:
         default: Email address for SNS notification
       RedshiftMaintenancewindow:
         default: Redshift Maintenance window
       EnableLoggingToS3:
-        default: Do you want to enable Redshift logging to Amazon S3 bucket?
+        default: Enable Redshift logging to S3
       MaxConcurrentCluster:
-        default: Max. number of Redshift Concurrency Scaling Clusters
+        default: Max. number of concurrent clusters
       EncryptionAtRest:
-        default: Do you want to encrypt Redshift database at-rest?
+        default: Encryption at rest
       kmskey:
-        default: KMS Key for Encrypting Redshift database at-rest
+        default: KMS key ID
       SnapshotIdentifier:
-        default: Redshift Snapshot Identifier - only if you want to restore cluster from snapshot
+        default: Redshift snapshot identifier
       SnapshotAccountNumber:
-        default: AWS Account-ID where the Redshift snapshot was created
+        default: AWS account-ID of the Redshift Snapshot
+      GlueCatalogDatabase:
+        default: Glue catalog database name
+      Maintenancewindow:
+        default: Maintenance window
+      TagEnvironment:
+        default: Environment
+      TagName:
+        default: Unique friendly name
+      TagTier:
+        default: Functional tier
+      TagOwner:
+        default: Designate business owner's email  
+      TagCompliance:
+        default: Compliance classifier
+      TagConfidentiality:
+        default: Confidentiality classifier
+      TagProjectCostCenter:
+        default: Project cost center
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
 Mappings:
   RedshiftLoggingAccountIDRegionMap:
     us-gov-west-1:
