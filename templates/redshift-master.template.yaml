@@ -13,7 +13,7 @@ Metadata:
         - PublicSubnet1CIDR
         - PublicSubnet2CIDR
       - Label:
-          default: Amzon Redshift configuration
+          default: Amazon Redshift configuration
         Parameters:
           - NodeType
           - NumberOfNodes
