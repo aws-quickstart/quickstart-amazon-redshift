@@ -1,4 +1,4 @@
-Description: "AWS VPC + bastion host + Amazon Redshift July,23,2019"
+Description: "AWS VPC + bastion host + Amazon Redshift Aug,19,2019 (qs-1psnj8ejo)"
 Metadata:
   LICENSE: Apache License Version 2.0
   AWS::CloudFormation::Interface:
@@ -77,8 +77,6 @@ Metadata:
         default: Redshift master user password
       NotificationList:
         default: SNS Notification Email
-      RedshiftMaintenancewindow:
-        default: Redshift Maintenance window
       EnableLoggingToS3:
         default: Enable Redshift logging to S3
       MaxConcurrentCluster:
