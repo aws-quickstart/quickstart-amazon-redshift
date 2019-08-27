@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Amazon Redshift July,23,2019"
+Description: "Amazon Redshift Aug,19,2019 (qs-1psnj8eli)"
 Parameters:
   VPCID: 
     Description: The ID of your existing VPC that you’re deploying Redshift into.
