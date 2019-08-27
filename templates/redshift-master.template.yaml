@@ -1,4 +1,4 @@
-Description: "AWS VPC + bastion host + Amazon Redshift Aug,19,2019 (qs-1psnj8eli)"
+Description: "AWS VPC + bastion host + Amazon Redshift Aug,19,2019 (qs-1psnj8ejo)"
 Metadata:
   LICENSE: Apache License Version 2.0
   AWS::CloudFormation::Interface:
