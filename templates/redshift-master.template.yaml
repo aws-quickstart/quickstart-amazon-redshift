@@ -38,9 +38,7 @@ Metadata:
           default: Tag identifiers
         Parameters:
           - TagEnvironment
-          - TagName
-          - TagOwner
-          - TagTier       
+          - TagName     
           - TagProjectCostCenter
           - TagConfidentiality
           - TagCompliance
@@ -77,6 +75,8 @@ Metadata:
         default: Redshift master user password
       NotificationList:
         default: SNS Notification Email
+      RedshiftMaintenancewindow:
+        default: Redshift Maintenance window
       EnableLoggingToS3:
         default: Enable Redshift logging to S3
       MaxConcurrentCluster:
@@ -115,6 +115,8 @@ Metadata:
         default: Allowed bastion external access CIDR
       AlternativeInitializationScript:
         default: Custom Bootstrap Script
+      NotificationList:
+        default: SNS Notification Email
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
@@ -122,11 +124,7 @@ Metadata:
       TagEnvironment:
         default: Environment
       TagName:
-        default: Unique friendly name
-      TagTier:
-        default: Functional tier
-      TagOwner:
-        default: Designate business owner's email  
+        default: Unique friendly name 
       TagCompliance:
         default: Compliance classifier
       TagConfidentiality:
@@ -296,12 +294,13 @@ Parameters:
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: The password that is associated with the master user account for the cluster that is being created.
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: >-
+        Min 8 characters. Must include 1 uppercase, 1 lowercase, 1 number, 1 symbol (exluding / @ \" ')
+    NoEcho: true
     Type: String
-    NoEcho: 'true'
     MinLength: '8'
     MaxLength: '64'
-    AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
     ConstraintDescription: >-
        Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   Maintenancewindow:
@@ -352,33 +351,21 @@ Parameters:
   TagName:
     Type: String
     Description: The unique friendly name as required by your company’s tagging strategy document, and which will be added to the environment tag.
-    Default: 'rs-QuickStart'
+    Default: 'rs-quickstart'
   TagEnvironment:
     Type: String
     AllowedValues:
-      - Development
+      - dev
       - test
       - pre-prod
-      - Production
+      - prod
+      - none
+    Default: none
     Description: The environment tag that is used to designate the environment stage of the associated AWS resource.
-    Default: 'Development'
-  TagTier:
-    Type: String
-    AllowedValues:
-      - data
-      - web
-      - application
-    Description: The functional tier of the associated AWS resource.
-    Default: 'data'
   TagProjectCostCenter:
     Type: String
     Description: The cost center associated with the project of the given AWS resource.
-    AllowedPattern: "^[a-zA-Z0-9]+$"
-    Default: '12345'
-    ConstraintDescription:  provide a valid cost center
-  TagOwner:
-    Type: String
-    Description: The email address of business owners who are associated with the given AWS resource, for sending outage or maintenance notifications.
+    Default: ''
   TagConfidentiality:
     Type: String
     Description: The confidentiality classification of the data that is associated with the resource.
@@ -387,7 +374,8 @@ Parameters:
       - private
       - confidential
       - pii/phi
-    Default: 'private'
+      - ''
+    Default: ''
   TagCompliance:
     Type: String
     Description: The compliance level for the AWS resource.
@@ -396,8 +384,8 @@ Parameters:
       - sox
       - fips
       - other
-      - none
-    Default: 'none'
+      - ''
+    Default: ''
 Conditions:
   GovCloudCondition: !Equals 
     - !Ref 'AWS::Region'
@@ -491,8 +479,19 @@ Resources:
         TagConfidentiality: !Ref TagConfidentiality
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
-        TagTier: !Ref TagTier
         TagProjectCostCenter: !Ref TagProjectCostCenter
-        TagOwner: !Ref TagOwner
         TagCompliance: !Ref TagCompliance
 
+Outputs:
+  RedshiftClusterEndpoint:
+    Description: Redshift Cluster endpoint
+    Value:
+      Fn::GetAtt:
+      - RedshiftStack
+      - Outputs.RedshiftClusterEndpoint
+  PSQLCommandLine:
+    Description: Name of the Redshift Database
+    Value:
+      Fn::GetAtt:
+      - RedshiftStack
+      - Outputs.PSQLCommandLine
