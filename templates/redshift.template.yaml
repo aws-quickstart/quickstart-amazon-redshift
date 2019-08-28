@@ -430,7 +430,7 @@ Resources:
         - ParameterName: auto_analyze
           ParameterValue: 'true'
         - ParameterName: statement_timeout
-          ParameterValue: 43200000
+          ParameterValue: '43200000'
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
