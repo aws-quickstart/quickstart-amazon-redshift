@@ -25,7 +25,7 @@ Parameters:
     Type: Number
     Default: '8200'
   NumberOfNodes:
-    Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1
+    Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1.
     Type: Number
     Default: '2'
   NodeType:
@@ -38,19 +38,20 @@ Parameters:
       - ds2.xlarge
       - ds2.8xlarge
   MasterUsername:
-    Description: The user name that is associated with the master user account for the cluster that is being created
+    Description: The user name that is associated with the master user account for the cluster that is being created.
     Type: String
     Default: rsadmin
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     Description: >-
-        Min 8 characters. Must include 1 uppercase, 1 lowercase, 1 number, 1 symbol (exluding / @ \" ')
+        The password that is associated with the master user account for the cluster that is being created. Must have at least 8 characters and no more than 64 characters, 
+        and must include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol (excluding / @ \" ').
     NoEcho: true
     Type: String
     MinLength: '8'
     MaxLength: '64'
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     ConstraintDescription: >-
      Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   Maintenancewindow:
@@ -429,7 +430,7 @@ Resources:
         - ParameterName: auto_analyze
           ParameterValue: 'true'
         - ParameterName: statement_timeout
-          ParameterValue: '43200000'
+          ParameterValue: 43200000
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
@@ -648,17 +649,17 @@ Outputs:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
   RedshiftClusterEndpoint:
-    Description: Redshift Cluster endpoint
+    Description: Redshift cluster endpoint
     Value: !Sub "${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}"
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterEndpoint'
   RedshiftParameterGroupName:
-    Description: Name of the Redshift Parameter Group
+    Description: Redshift parameter group
     Value: !Ref RedshiftClusterParameterGroup
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftParameterGroupName'
   RedshiftDatabaseName:
-    Description: Name of the Redshift Database
+    Description: Redshift database name
     Value: !If 
               - IsSnapshotSpecified
               - !Join [ ' ',['Check name of database from which the Snapshot', !Ref SnapshotIdentifier , ' was originally taken.']]
@@ -670,7 +671,7 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftUsername'
   RedshiftLoggingS3Bucket:
-    Description: Name of S3 bucket created for Redshift Logging
+    Description: Amazon S3 bucket created for audit logging
     Condition: IsEnableLoggingToS3
     Value: !Ref RedshiftLoggingS3Bucket
     Export:
@@ -681,20 +682,14 @@ Outputs:
     Value: !GetAtt MyRedshiftIAMRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterIAMRole'
-  S3BucketForRedshiftIAMRole:
-    Description: IAM Role assigned to Redshift cluster
-    Condition: IsConfigureRedshiftIAMRole
-    Value: !Ref S3BucketForRedshiftIAMRole
-    Export:
-      Name: !Sub '${AWS::StackName}-S3BucketForRedshiftIAMRole'
   GlueCatalogDBName:
-    Description: Name of the AWS Glue Catalog Database
+    Description: AWS Glue Catalog database
     Condition: IsGlueCatalogName
     Value: !Ref GlueCatalogDB
     Export:
       Name: !Sub '${AWS::StackName}-GlueCatalogDBName'
   PSQLCommandLine:    
-    Description: PSQL Command Line
+    Description: PSQL command line
     Value: !Join
              - ''
              - - 'psql -h '
