@@ -227,8 +227,6 @@ Metadata:
         default: Amazon S3 bucket for Redshift IAM role
       NotificationList:
         default: Email address for SNS notification
-      RedshiftMaintenancewindow:
-        default: Redshift Maintenance window
       EnableLoggingToS3:
         default: Enable Redshift logging to S3
       MaxConcurrentCluster:
