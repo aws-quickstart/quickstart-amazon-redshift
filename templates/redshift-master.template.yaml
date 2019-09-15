@@ -22,6 +22,7 @@ Metadata:
           - MasterUsername
           - MasterUserPassword
           - NotificationList 
+          - MakeRedshiftPubliclyAccessible
       - Label:
           default: Amazon Redshift advanced configuration
         Parameters:
@@ -38,9 +39,7 @@ Metadata:
           default: Tag identifiers
         Parameters:
           - TagEnvironment
-          - TagName
-          - TagOwner
-          - TagTier       
+          - TagName     
           - TagProjectCostCenter
           - TagConfidentiality
           - TagCompliance
@@ -122,11 +121,7 @@ Metadata:
       TagEnvironment:
         default: Environment
       TagName:
-        default: Unique friendly name
-      TagTier:
-        default: Functional tier
-      TagOwner:
-        default: Designate business owner's email  
+        default: Unique friendly name 
       TagCompliance:
         default: Compliance classifier
       TagConfidentiality:
@@ -145,6 +140,8 @@ Metadata:
         default: Public subnet 1 CIDR
       PublicSubnet2CIDR:
         default: Public subnet 2 CIDR
+      MakeRedshiftPubliclyAccessible:
+        default: Make Redshift publicly accessible
 Parameters:
   AvailabilityZones:
    Description: >-
@@ -267,8 +264,15 @@ Parameters:
     Default: "true"
     Description: Enables or disables creation of a bastion stack. If true, a bastion stack will be created. 
     Type: String
+  MakeRedshiftPubliclyAccessible:
+    AllowedValues:
+    - 'yes'
+    - 'no'
+    Default: 'no'
+    Description: Specifies whether Amazon Redshift will be publicly accessible.
+    Type: String
   DatabaseName:
-    Description: The name of the first database to be created when the cluster is created
+    Description: The name of the first database to be created when the cluster is created.
     Type: String
     Default: rsdev01
     AllowedPattern: '([a-z]|[0-9])+' 
@@ -281,7 +285,7 @@ Parameters:
     Type: Number
     Default: '2'
   NodeType:
-    Description: The type of node to be provisioned
+    Description: The type of node to be provisioned.
     Type: String
     Default: dc2.large
     AllowedValues:
@@ -290,18 +294,20 @@ Parameters:
       - ds2.xlarge
       - ds2.8xlarge
   MasterUsername:
-    Description: The user name that is associated with the master user account for the cluster that is being created
+    Description: The user name that is associated with the master user account for the cluster that is being created.
     Type: String
     Default: rsadmin
     AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
-    Description: The password that is associated with the master user account for the cluster that is being created.
+    Description: >-
+        The password that is associated with the master user account for the cluster that is being created. Must have at least 8 characters and no more than 64 characters, 
+        and must include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol (excluding / @ \" ').
+    NoEcho: true
     Type: String
-    NoEcho: 'true'
     MinLength: '8'
     MaxLength: '64'
-    AllowedPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     ConstraintDescription: >-
        Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   Maintenancewindow:
@@ -352,33 +358,21 @@ Parameters:
   TagName:
     Type: String
     Description: The unique friendly name as required by your company’s tagging strategy document, and which will be added to the environment tag.
-    Default: 'rs-QuickStart'
+    Default: 'rs-quickstart'
   TagEnvironment:
     Type: String
     AllowedValues:
-      - Development
+      - dev
       - test
       - pre-prod
-      - Production
+      - prod
+      - none
+    Default: none
     Description: The environment tag that is used to designate the environment stage of the associated AWS resource.
-    Default: 'Development'
-  TagTier:
-    Type: String
-    AllowedValues:
-      - data
-      - web
-      - application
-    Description: The functional tier of the associated AWS resource.
-    Default: 'data'
   TagProjectCostCenter:
     Type: String
     Description: The cost center associated with the project of the given AWS resource.
-    AllowedPattern: "^[a-zA-Z0-9]+$"
-    Default: '12345'
-    ConstraintDescription:  provide a valid cost center
-  TagOwner:
-    Type: String
-    Description: The email address of business owners who are associated with the given AWS resource, for sending outage or maintenance notifications.
+    Default: ''
   TagConfidentiality:
     Type: String
     Description: The confidentiality classification of the data that is associated with the resource.
@@ -387,7 +381,8 @@ Parameters:
       - private
       - confidential
       - pii/phi
-    Default: 'private'
+      - ''
+    Default: ''
   TagCompliance:
     Type: String
     Description: The compliance level for the AWS resource.
@@ -396,8 +391,8 @@ Parameters:
       - sox
       - fips
       - other
-      - none
-    Default: 'none'
+      - ''
+    Default: ''
 Conditions:
   GovCloudCondition: !Equals 
     - !Ref 'AWS::Region'
@@ -405,6 +400,9 @@ Conditions:
   EnableBastionAccess: !Equals
     - !Ref EnableBastion
     - "true"
+  RedshiftPubliclyAccessible: !Equals
+    - !Ref 'MakeRedshiftPubliclyAccessible'
+    - 'yes'
 Resources:
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
@@ -470,6 +468,18 @@ Resources:
         Subnet2ID: !GetAtt 
           - VPCStack
           - Outputs.PrivateSubnet2AID
+        PubliclyAccessible: !If
+          - RedshiftPubliclyAccessible
+          - 'true'
+          - 'false'
+        Subnet1ID: !If
+          - RedshiftPubliclyAccessible
+          - Fn::GetAtt: [ VPCStack, Outputs.PublicSubnet1ID ]
+          - Fn::GetAtt: [ VPCStack, Outputs.PrivateSubnet1AID ]
+        Subnet2ID: !If
+          - RedshiftPubliclyAccessible
+          - Fn::GetAtt: [ VPCStack, Outputs.PublicSubnet2ID ]
+          - Fn::GetAtt: [ VPCStack, Outputs.PrivateSubnet2AID ]
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
         NumberOfNodes: !Ref NumberOfNodes
@@ -491,8 +501,19 @@ Resources:
         TagConfidentiality: !Ref TagConfidentiality
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
-        TagTier: !Ref TagTier
         TagProjectCostCenter: !Ref TagProjectCostCenter
-        TagOwner: !Ref TagOwner
         TagCompliance: !Ref TagCompliance
 
+Outputs:
+  RedshiftClusterEndpoint:
+    Description: Redshift Cluster endpoint
+    Value:
+      Fn::GetAtt:
+      - RedshiftStack
+      - Outputs.RedshiftClusterEndpoint
+  PSQLCommandLine:
+    Description: Name of the Redshift Database
+    Value:
+      Fn::GetAtt:
+      - RedshiftStack
+      - Outputs.PSQLCommandLine
