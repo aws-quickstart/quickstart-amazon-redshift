@@ -462,12 +462,6 @@ Resources:
           - VPCStack
           - Outputs.VPCID
         RemoteAccessCIDR: !Ref VPCCIDR
-        Subnet1ID: !GetAtt 
-          - VPCStack
-          - Outputs.PrivateSubnet1AID
-        Subnet2ID: !GetAtt 
-          - VPCStack
-          - Outputs.PrivateSubnet2AID
         PubliclyAccessible: !If
           - RedshiftPubliclyAccessible
           - 'true'
