@@ -6,12 +6,13 @@ Metadata:
       - Label:
           default: VPC network configuration
         Parameters:
-        - AvailabilityZones
-        - VPCCIDR
-        - PrivateSubnet1CIDR
-        - PrivateSubnet2CIDR
-        - PublicSubnet1CIDR
-        - PublicSubnet2CIDR
+          - AvailabilityZones
+          - VPCCIDR
+          - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - RemoteAccessCIDR
       - Label:
           default: Amazon Redshift configuration
         Parameters:
@@ -47,7 +48,6 @@ Metadata:
           default: Linux Bastion configuration
         Parameters:
           - EnableBastion
-          - RemoteAccessCIDR
           - KeyPairName
           - BastionInstanceType
           - BastionTenancy
@@ -111,7 +111,7 @@ Metadata:
       KeyPairName:
         default: Key pair name
       RemoteAccessCIDR:
-        default: Allowed bastion external access CIDR
+        default: Allowed external access CIDR
       AlternativeInitializationScript:
         default: Custom Bootstrap Script
       QSS3BucketName:
