@@ -471,12 +471,20 @@ Resources:
           - 'false'
         Subnet1ID: !If
           - RedshiftPubliclyAccessible
-          - Fn::GetAtt: [ VPCStack, Outputs.PublicSubnet1ID ]
-          - Fn::GetAtt: [ VPCStack, Outputs.PrivateSubnet1AID ]
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PublicSubnet1ID
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PrivateSubnet1AID
         Subnet2ID: !If
           - RedshiftPubliclyAccessible
-          - Fn::GetAtt: [ VPCStack, Outputs.PublicSubnet2ID ]
-          - Fn::GetAtt: [ VPCStack, Outputs.PrivateSubnet2AID ]
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PublicSubnet2ID
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PrivateSubnet2AID
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
         NumberOfNodes: !Ref NumberOfNodes
