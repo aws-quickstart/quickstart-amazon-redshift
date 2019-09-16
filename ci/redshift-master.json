@@ -5,11 +5,11 @@
     },
     {
         "ParameterKey": "RemoteAccessCIDR",
-        "ParameterValue": "10.0.0.0/16"
+        "ParameterValue": "0.0.0.0/0"
     },
     {
         "ParameterKey": "KeyPairName",
-        "ParameterValue": "tonynv"
+        "ParameterValue": "sudhig-us-west-2"
     },
     {
         "ParameterKey": "QSS3BucketName",
