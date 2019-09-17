@@ -14,7 +14,14 @@ Parameters:
     Type: 'AWS::EC2::Subnet::Id'
   Subnet2ID:
     Description: The ID of the private subnet in Availability Zone 2 in your existing VPC.
-    Type: 'AWS::EC2::Subnet::Id'    
+    Type: 'AWS::EC2::Subnet::Id'
+  PubliclyAccessible:
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: Indicates whether the cluster can be accessed from a public network.
+    Type: String 
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created.
     Type: String
@@ -175,6 +182,7 @@ Metadata:
           - MasterUsername
           - MasterUserPassword
           - NotificationList
+          - PubliclyAccessible
       -
         Label:
           default: Amazon Redshift advanced configuration
@@ -254,6 +262,8 @@ Metadata:
         default: Confidentiality classifier
       TagProjectCostCenter:
         default: Project cost center
+      PubliclyAccessible:
+        default: Make Redshift publicly accessible
       QSS3BucketName:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
@@ -308,6 +318,9 @@ Conditions:
     Fn::Equals:
     - Ref: NumberOfNodes
     - '1'
+  IsPublic: !Equals
+    - !Ref "PubliclyAccessible"
+    - "true"
   IsProd: !Equals [!Ref TagEnvironment, 'prod']
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !And
@@ -496,7 +509,10 @@ Resources:
         - !Ref RedshiftSecurityGroup
       PreferredMaintenanceWindow: !Ref Maintenancewindow
       AutomatedSnapshotRetentionPeriod: !If [IsProd, 35, 8]
-      PubliclyAccessible: false
+      PubliclyAccessible: !If
+        - IsPublic
+        - true
+        - false
       ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
       LoggingProperties: !If 
           - IsEnableLoggingToS3

@@ -6,12 +6,13 @@ Metadata:
       - Label:
           default: VPC network configuration
         Parameters:
-        - AvailabilityZones
-        - VPCCIDR
-        - PrivateSubnet1CIDR
-        - PrivateSubnet2CIDR
-        - PublicSubnet1CIDR
-        - PublicSubnet2CIDR
+          - AvailabilityZones
+          - VPCCIDR
+          - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+          - RemoteAccessCIDR
       - Label:
           default: Amazon Redshift configuration
         Parameters:
@@ -22,6 +23,7 @@ Metadata:
           - MasterUsername
           - MasterUserPassword
           - NotificationList 
+          - MakeRedshiftPubliclyAccessible
       - Label:
           default: Amazon Redshift advanced configuration
         Parameters:
@@ -46,7 +48,6 @@ Metadata:
           default: Linux Bastion configuration
         Parameters:
           - EnableBastion
-          - RemoteAccessCIDR
           - KeyPairName
           - BastionInstanceType
           - BastionTenancy
@@ -110,7 +111,7 @@ Metadata:
       KeyPairName:
         default: Key pair name
       RemoteAccessCIDR:
-        default: Allowed bastion external access CIDR
+        default: Allowed external access CIDR
       AlternativeInitializationScript:
         default: Custom Bootstrap Script
       QSS3BucketName:
@@ -139,6 +140,8 @@ Metadata:
         default: Public subnet 1 CIDR
       PublicSubnet2CIDR:
         default: Public subnet 2 CIDR
+      MakeRedshiftPubliclyAccessible:
+        default: Make Redshift publicly accessible
 Parameters:
   AvailabilityZones:
    Description: >-
@@ -260,6 +263,13 @@ Parameters:
       - "false"
     Default: "true"
     Description: Enables or disables creation of a bastion stack. If true, a bastion stack will be created. 
+    Type: String
+  MakeRedshiftPubliclyAccessible:
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+    Description: Specifies whether Amazon Redshift will be publicly accessible.
     Type: String
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created.
@@ -390,6 +400,9 @@ Conditions:
   EnableBastionAccess: !Equals
     - !Ref EnableBastion
     - "true"
+  RedshiftPubliclyAccessible: !Equals
+    - !Ref 'MakeRedshiftPubliclyAccessible'
+    - 'true'
 Resources:
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
@@ -448,13 +461,30 @@ Resources:
         VPCID: !GetAtt 
           - VPCStack
           - Outputs.VPCID
-        RemoteAccessCIDR: !Ref VPCCIDR
-        Subnet1ID: !GetAtt 
-          - VPCStack
-          - Outputs.PrivateSubnet1AID
-        Subnet2ID: !GetAtt 
-          - VPCStack
-          - Outputs.PrivateSubnet2AID
+        RemoteAccessCIDR: !If
+          - RedshiftPubliclyAccessible
+          - !Ref RemoteAccessCIDR
+          - !Ref VPCCIDR
+        PubliclyAccessible: !If
+          - RedshiftPubliclyAccessible
+          - 'true'
+          - 'false'
+        Subnet1ID: !If
+          - RedshiftPubliclyAccessible
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PublicSubnet1ID
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PrivateSubnet1AID
+        Subnet2ID: !If
+          - RedshiftPubliclyAccessible
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PublicSubnet2ID
+          - Fn::GetAtt:
+            - VPCStack
+            - Outputs.PrivateSubnet2AID
         DatabaseName: !Ref DatabaseName
         RedshiftClusterPort: !Ref RedshiftClusterPort
         NumberOfNodes: !Ref NumberOfNodes
