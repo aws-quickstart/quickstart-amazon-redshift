@@ -266,9 +266,9 @@ Parameters:
     Type: String
   MakeRedshiftPubliclyAccessible:
     AllowedValues:
-    - 'yes'
-    - 'no'
-    Default: 'no'
+    - 'true'
+    - 'false'
+    Default: 'false'
     Description: Specifies whether Amazon Redshift will be publicly accessible.
     Type: String
   DatabaseName:
@@ -402,7 +402,7 @@ Conditions:
     - "true"
   RedshiftPubliclyAccessible: !Equals
     - !Ref 'MakeRedshiftPubliclyAccessible'
-    - 'yes'
+    - 'true'
 Resources:
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
