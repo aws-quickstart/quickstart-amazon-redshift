@@ -20,3 +20,5 @@ tests:
   redshift:
     parameter_input: redshift-master.json
     template_file: redshift-master.template.yaml
+    regions:
+    - us-east-1
