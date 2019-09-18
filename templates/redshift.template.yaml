@@ -447,7 +447,7 @@ Resources:
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: "wlm_json_configuration"
-          ParameterValue: "[ {\"query_group\" : [ ], \"query_group_wild_card\" : 0, \"user_group\" : [ ], \"user_group_wild_card\" : 0, \"concurrency_scaling\" : \"auto\", \"rules\" : [ { \"rule_name\" : \"DiskSpilling\", \"predicate\" : [ { \"metric_name\" : \"query_temp_blocks_to_disk\", \"operator\" : \">\",  \"value\" : 100000} ], \"action\" : \"log\", \"value\" : \"\"}, { \"rule_name\" : \"RowJoining\", \"predicate\" : [ { \"metric_name\" : \"join_row_count\", \"operator\" : \">\", \"value\" : 1000000000 } ], \"action\" : \"log\", \"value\" : \"\" } ], \"auto_wlm\" : true}, {\"short_query_queue\" : true} ]"
+          ParameterValue: "[ { \"query_group\" : [ ],\"query_group_wild_card\" : 0,\"user_group\" : [ ],\"user_group_wild_card\" : 0,\"concurrency_scaling\" : \"auto\",\"rules\" : [ {  \"rule_name\" : \"DiskSpilling\",  \"predicate\" : [ { \"metric_name\" : \"query_temp_blocks_to_disk\", \"operator\" : \">\", \"value\" : 100000  } ], \"action\" : \"log\"}, {  \"rule_name\" : \"RowJoining\",  \"predicate\" : [ { \"metric_name\" : \"join_row_count\", \"operator\" : \">\", \"value\" : 1000000000 } ],  \"action\" : \"log\"} ],\"priority\" : \"normal\",\"queue_type\" : \"auto\",\"auto_wlm\" : true }, {\"short_query_queue\" : true } ]"
       Tags:
         -
           Key: Name
