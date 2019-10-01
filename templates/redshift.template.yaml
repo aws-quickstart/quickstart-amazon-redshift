@@ -489,8 +489,8 @@ Resources:
           Value: !Ref TagCompliance
   RedshiftCluster:
     Type: 'AWS::Redshift::Cluster'
-    DeletionPolicy: !If [IsProd, 'Snapshot', !Ref "AWS::NoValue"]
-    UpdateReplacePolicy: Snapshot
+    DeletionPolicy: 'Snapshot'
+    UpdateReplacePolicy: 'Snapshot'
     Properties:
       ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
       ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.Outputs.UniqueID]]
@@ -665,10 +665,25 @@ Outputs:
     Description: 'Stack name'
     Value: !Sub '${AWS::StackName}'
   RedshiftClusterEndpoint:
-    Description: Redshift cluster endpoint
+    Description: Redshift cluster endpoint address with port
     Value: !Sub "${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}"
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterEndpoint'
+  RedshiftEndpoint:
+    Description: Redshift endpoint address
+    Value: !Sub "${RedshiftCluster.Endpoint.Address}"
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftEndpoint'
+  RedshiftPort:
+    Description: Redshift endpoint port
+    Value: !Sub "${RedshiftCluster.Endpoint.Port}"
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftPort'
+  RedshiftCluster:
+    Description: Redshift cluser identifier
+    Value: !Sub "${RedshiftCluster}"
+    Export:
+      Name: !Sub '${AWS::StackName}-RedshiftCluster'
   RedshiftParameterGroupName:
     Description: Redshift parameter group
     Value: !Ref RedshiftClusterParameterGroup
