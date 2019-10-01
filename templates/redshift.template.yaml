@@ -489,7 +489,7 @@ Resources:
           Value: !Ref TagCompliance
   RedshiftCluster:
     Type: 'AWS::Redshift::Cluster'
-    DeletionPolicy: Snapshot
+    DeletionPolicy: !If [IsProd, 'Snapshot', !Ref "AWS::NoValue"]
     UpdateReplacePolicy: Snapshot
     Properties:
       ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
