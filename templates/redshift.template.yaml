@@ -42,6 +42,7 @@ Parameters:
     AllowedValues:
       - dc2.large
       - dc2.8xlarge
+      - ra3.16xlarge
       - ds2.xlarge
       - ds2.8xlarge
   MasterUsername:
