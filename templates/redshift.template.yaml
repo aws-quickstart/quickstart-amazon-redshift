@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "Amazon Redshift Aug,19,2019 (qs-1psnj8eli)"
+Description: 'Amazon Redshift Aug,19,2019 (qs-1psnj8eli)'
 Parameters:
-  VPCID: 
+  VPCID:
     Description: The ID of your existing VPC that you’re deploying Redshift into.
     Type: 'AWS::EC2::VPC::Id'
   RemoteAccessCIDR:
@@ -17,16 +17,16 @@ Parameters:
     Type: 'AWS::EC2::Subnet::Id'
   PubliclyAccessible:
     AllowedValues:
-      - "true"
-      - "false"
-    Default: "false"
+      - 'true'
+      - 'false'
+    Default: 'false'
     Description: Indicates whether the cluster can be accessed from a public network.
-    Type: String 
+    Type: String
   DatabaseName:
     Description: The name of the first database to be created when the cluster is created.
     Type: String
     Default: rsdev01
-    AllowedPattern: '([a-z]|[0-9])+' 
+    AllowedPattern: '([a-z]|[0-9])+'
   RedshiftClusterPort:
     Description: The port number on which the cluster accepts incoming connections.
     Type: Number
@@ -53,15 +53,15 @@ Parameters:
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
   MasterUserPassword:
     Description: >-
-        The password that is associated with the master user account for the cluster that is being created. Must have at least 8 characters and no more than 64 characters, 
-        and must include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol (excluding / @ \" ').
+      The password that is associated with the master user account for the cluster that is being created. Must have at least 8 characters and no more than 64 characters, 
+      and must include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol (excluding / @ \" ').
     NoEcho: true
     Type: String
     MinLength: '8'
     MaxLength: '64'
     AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     ConstraintDescription: >-
-     Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
+      Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   Maintenancewindow:
     Description: The maintenance window for the Redshift cluster.
     Type: String
@@ -73,10 +73,10 @@ Parameters:
   EncryptionAtRest:
     Description: Enables or disables encryption at rest of the Redshift database.
     Type: String
-    Default: false
+    Default: 'false'
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     ConstraintDescription: must be true or false.
   kmskey:
     Description: The existing KMS key ID for encrypting Redshift database at-rest.
@@ -86,7 +86,7 @@ Parameters:
     Type: String
     Description: The email notification list that is used to configure an SNS topic for sending CloudWatch alarm and event notifications.
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    ConstraintDescription: provide a valid email address.  
+    ConstraintDescription: provide a valid email address.
     Default: 'ops@company.com'
   SnapshotIdentifier:
     Description: The Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
@@ -97,11 +97,11 @@ Parameters:
     Default: ''
     Type: String
   EnableLoggingToS3:
-    Default: false
+    Default: 'false'
     Type: String
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
   S3BucketForRedshiftIAMRole:
     Type: String
@@ -114,16 +114,20 @@ Parameters:
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
   QSS3BucketName:
-    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
-    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
+    ConstraintDescription: 'Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).'
     Default: aws-quickstart
-    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: 'S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).'
+    Type: String
+  QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
     Type: String
   QSS3KeyPrefix:
-    AllowedPattern: "^[0-9a-zA-Z-/]*$"
-    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    AllowedPattern: '^[0-9a-zA-Z-/]*$'
+    ConstraintDescription: 'Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).'
     Default: quickstart-amazon-redshift/
-    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Description: 'S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).'
     Type: String
   TagName:
     Type: String
@@ -184,8 +188,7 @@ Metadata:
           - MasterUserPassword
           - NotificationList
           - PubliclyAccessible
-      -
-        Label:
+      - Label:
           default: Amazon Redshift advanced configuration
         Parameters:
           - EnableLoggingToS3
@@ -197,17 +200,15 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
-      -
-        Label:
+      - Label:
           default: Tag identifiers
         Parameters:
           - TagEnvironment
-          - TagName      
+          - TagName
           - TagProjectCostCenter
           - TagConfidentiality
           - TagCompliance
-      - 
-        Label:
+      - Label:
           default: AWS Quick Start configuration
         Parameters:
           - QSS3BucketName
@@ -256,7 +257,7 @@ Metadata:
       TagEnvironment:
         default: Environment
       TagName:
-        default: Unique friendly name 
+        default: Unique friendly name
       TagCompliance:
         default: Compliance classifier
       TagConfidentiality:
@@ -314,51 +315,64 @@ Mappings:
     sa-east-1:
       RSAccountID: 075028567923
 Conditions:
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   GovCloudCondition: !Equals [!Ref 'AWS::Region', 'us-gov-west-1']
   RedshiftSingleNodeClusterCondition:
     Fn::Equals:
-    - Ref: NumberOfNodes
-    - '1'
+      - Ref: NumberOfNodes
+      - '1'
   IsPublic: !Equals
-    - !Ref "PubliclyAccessible"
-    - "true"
+    - !Ref 'PubliclyAccessible'
+    - 'true'
   IsProd: !Equals [!Ref TagEnvironment, 'prod']
   IsEncryptionAtRest: !Equals [!Ref EncryptionAtRest, 'true']
   IsEnableLoggingToS3: !And
-     - !Equals [!Ref EnableLoggingToS3, 'true']
-     - !Not [!Condition GovCloudCondition]
-  
-  IsConfigureRedshiftIAMRole: 
+    - !Equals [!Ref EnableLoggingToS3, 'true']
+    - !Not [!Condition GovCloudCondition]
+
+  IsConfigureRedshiftIAMRole:
     Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: S3BucketForRedshiftIAMRole
+      - Fn::Equals:
+          - ''
+          - Ref: S3BucketForRedshiftIAMRole
   IsGlueCatalogName:
     Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: GlueCatalogDatabase
+      - Fn::Equals:
+          - ''
+          - Ref: GlueCatalogDatabase
   IsSnapshotSpecified:
     Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: SnapshotIdentifier
+      - Fn::Equals:
+          - ''
+          - Ref: SnapshotIdentifier
   IsSnapshotAccountSpecified:
     Fn::Not:
-    - Fn::Equals:
-      - ''
-      - Ref: SnapshotAccountNumber
+      - Fn::Equals:
+          - ''
+          - Ref: SnapshotAccountNumber
 Resources:
   GenerateIdStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/generateid.template.yaml
-        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
+      TemplateURL: !Sub
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/generateid.template.yaml'
+        - S3Region:
+            !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+          S3Bucket:
+            !If [
+              UsingDefaultBucket,
+              !Sub '${QSS3BucketName}-${AWS::Region}',
+              !Ref QSS3BucketName,
+            ]
+
   RedshiftSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: !Join [ "-", ["Redshift-Security-Group", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      GroupDescription:
+        !Join [
+          '-',
+          ['Redshift-Security-Group', !GetAtt GenerateIdStack.Outputs.UniqueID],
+        ]
       VpcId: !Ref VPCID
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -367,23 +381,18 @@ Resources:
           CidrIp: !Ref RemoteAccessCIDR
           Description: 'Redshift Access to VPC CIDR'
       Tags:
-        -
-          Key: Name
+        - Key: Name
           Value: !Join
-                 - '_'
-                 - - !Ref TagName
-                   - !Sub '${AWS::StackName}-RedshiftSecurityGroup'
-        -
-          Key: Environment
+            - '_'
+            - - !Ref TagName
+              - !Sub '${AWS::StackName}-RedshiftSecurityGroup'
+        - Key: Environment
           Value: !Ref TagEnvironment
-        -
-          Key: ProjectCostCenter
+        - Key: ProjectCostCenter
           Value: !Ref TagProjectCostCenter
-        -
-          Key: Confidentiality
+        - Key: Confidentiality
           Value: !Ref TagConfidentiality
-        -
-          Key: Compliance
+        - Key: Compliance
           Value: !Ref TagCompliance
   RedshiftLoggingS3Bucket:
     Type: 'AWS::S3::Bucket'
@@ -392,49 +401,83 @@ Resources:
     Properties:
       LifecycleConfiguration:
         Rules:
-        - Id: RedshiftLogsArchivingToGlacier
-          Status: Enabled
-          ExpirationInDays: 30
-          Transitions:
-            - TransitionInDays: 14
-              StorageClass: Glacier
+          - Id: RedshiftLogsArchivingToGlacier
+            Status: Enabled
+            ExpirationInDays: 30
+            Transitions:
+              - TransitionInDays: 14
+                StorageClass: Glacier
       Tags:
-        -
-          Key: Name
-          Value: !Join [ "-", [ !Ref TagName, !Ref 'AWS::StackName', "Redshift-Cluster-LoggingBucket" ] ]
-        -
-          Key: Environment
+        - Key: Name
+          Value:
+            !Join [
+              '-',
+              [
+                !Ref TagName,
+                !Ref 'AWS::StackName',
+                'Redshift-Cluster-LoggingBucket',
+              ],
+            ]
+        - Key: Environment
           Value: !Ref TagEnvironment
-        -
-          Key: ProjectCostCenter
+        - Key: ProjectCostCenter
           Value: !Ref TagProjectCostCenter
-        -
-          Key: Confidentiality
+        - Key: Confidentiality
           Value: !Ref TagConfidentiality
-        -
-          Key: Compliance
+        - Key: Compliance
           Value: !Ref TagCompliance
   RedshiftLoggingS3BucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
     Condition: IsEnableLoggingToS3
     Properties:
       Bucket: !Ref RedshiftLoggingS3Bucket
-      PolicyDocument: 
+      PolicyDocument:
         Statement:
-        - Principal:
-            AWS: !Join [ '', ['arn:aws:iam::', !FindInMap [RedshiftLoggingAccountIDRegionMap, !Ref 'AWS::Region', RSAccountID ] ,':user/logs']]
-          Effect: Allow
-          Action: 's3:GetBucketAcl'
-          Resource: !Sub '${RedshiftLoggingS3Bucket.Arn}'
-        - Principal:
-            AWS: !Join [ '', ['arn:aws:iam::', !FindInMap [RedshiftLoggingAccountIDRegionMap, !Ref 'AWS::Region', RSAccountID ] ,':user/logs']]
-          Effect: Allow
-          Action: 's3:PutObject'
-          Resource: !Sub '${RedshiftLoggingS3Bucket.Arn}/AWSLogs/*'
+          - Principal:
+              AWS:
+                !Join [
+                  '',
+                  [
+                    'arn:aws:iam::',
+                    !FindInMap [
+                      RedshiftLoggingAccountIDRegionMap,
+                      !Ref 'AWS::Region',
+                      RSAccountID,
+                    ],
+                    ':user/logs',
+                  ],
+                ]
+            Effect: Allow
+            Action: 's3:GetBucketAcl'
+            Resource: !Sub '${RedshiftLoggingS3Bucket.Arn}'
+          - Principal:
+              AWS:
+                !Join [
+                  '',
+                  [
+                    'arn:aws:iam::',
+                    !FindInMap [
+                      RedshiftLoggingAccountIDRegionMap,
+                      !Ref 'AWS::Region',
+                      RSAccountID,
+                    ],
+                    ':user/logs',
+                  ],
+                ]
+            Effect: Allow
+            Action: 's3:PutObject'
+            Resource: !Sub '${RedshiftLoggingS3Bucket.Arn}/AWSLogs/*'
   RedshiftClusterParameterGroup:
     Type: 'AWS::Redshift::ClusterParameterGroup'
     Properties:
-      Description: !Join [ " ",  ["Redshift-Cluster-Parameter-Group-", !GetAtt GenerateIdStack.Outputs.UniqueID ]]
+      Description:
+        !Join [
+          ' ',
+          [
+            'Redshift-Cluster-Parameter-Group-',
+            !GetAtt GenerateIdStack.Outputs.UniqueID,
+          ],
+        ]
       ParameterGroupFamily: redshift-1.0
       Parameters:
         - ParameterName: enable_user_activity_logging
@@ -447,65 +490,87 @@ Resources:
           ParameterValue: '43200000'
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
-        - ParameterName: "wlm_json_configuration"
-          ParameterValue: "[ { \"query_group\" : [ ],\"query_group_wild_card\" : 0,\"user_group\" : [ ],\"user_group_wild_card\" : 0,\"concurrency_scaling\" : \"auto\",\"rules\" : [ {  \"rule_name\" : \"DiskSpilling\",  \"predicate\" : [ { \"metric_name\" : \"query_temp_blocks_to_disk\", \"operator\" : \">\", \"value\" : 100000  } ], \"action\" : \"log\"}, {  \"rule_name\" : \"RowJoining\",  \"predicate\" : [ { \"metric_name\" : \"join_row_count\", \"operator\" : \">\", \"value\" : 1000000000 } ],  \"action\" : \"log\"} ],\"priority\" : \"normal\",\"queue_type\" : \"auto\",\"auto_wlm\" : true }, {\"short_query_queue\" : true } ]"
+        - ParameterName: 'wlm_json_configuration'
+          ParameterValue: '[ { "query_group" : [ ],"query_group_wild_card" : 0,"user_group" : [ ],"user_group_wild_card" : 0,"concurrency_scaling" : "auto","rules" : [ {  "rule_name" : "DiskSpilling",  "predicate" : [ { "metric_name" : "query_temp_blocks_to_disk", "operator" : ">", "value" : 100000  } ], "action" : "log"}, {  "rule_name" : "RowJoining",  "predicate" : [ { "metric_name" : "join_row_count", "operator" : ">", "value" : 1000000000 } ],  "action" : "log"} ],"priority" : "normal","queue_type" : "auto","auto_wlm" : true }, {"short_query_queue" : true } ]'
       Tags:
-        -
-          Key: Name
-          Value: !Join [ "-", [ !Ref TagName, !Ref 'AWS::StackName', "Primary Cluster Parameter group" ] ]
-        -
-          Key: Environment
+        - Key: Name
+          Value:
+            !Join [
+              '-',
+              [
+                !Ref TagName,
+                !Ref 'AWS::StackName',
+                'Primary Cluster Parameter group',
+              ],
+            ]
+        - Key: Environment
           Value: !Ref TagEnvironment
-        -
-          Key: ProjectCostCenter
+        - Key: ProjectCostCenter
           Value: !Ref TagProjectCostCenter
-        -
-          Key: Confidentiality
+        - Key: Confidentiality
           Value: !Ref TagConfidentiality
-        -
-          Key: Compliance
+        - Key: Compliance
           Value: !Ref TagCompliance
   RedshiftClusterSubnetGroup:
     Type: 'AWS::Redshift::ClusterSubnetGroup'
     Properties:
       Description: Cluster subnet group
-      SubnetIds: 
+      SubnetIds:
         - !Ref Subnet1ID
         - !Ref Subnet2ID
       Tags:
-        -
-          Key: Name
-          Value: !Join [ "-", [ !Ref TagName, !Ref 'AWS::StackName', "Primary Redshift Cluster Subnet group" ] ]
-        -
-          Key: Environment
+        - Key: Name
+          Value:
+            !Join [
+              '-',
+              [
+                !Ref TagName,
+                !Ref 'AWS::StackName',
+                'Primary Redshift Cluster Subnet group',
+              ],
+            ]
+        - Key: Environment
           Value: !Ref TagEnvironment
-        -
-          Key: ProjectCostCenter
+        - Key: ProjectCostCenter
           Value: !Ref TagProjectCostCenter
-        -
-          Key: Confidentiality
+        - Key: Confidentiality
           Value: !Ref TagConfidentiality
-        -
-          Key: Compliance
+        - Key: Compliance
           Value: !Ref TagCompliance
   RedshiftCluster:
     Type: 'AWS::Redshift::Cluster'
     DeletionPolicy: 'Snapshot'
     UpdateReplacePolicy: 'Snapshot'
     Properties:
-      ClusterType: !If [RedshiftSingleNodeClusterCondition, "single-node", "multi-node"]
-      ClusterIdentifier: !Join ["-", [!Ref DatabaseName, !GetAtt GenerateIdStack.Outputs.UniqueID]]
-      NumberOfNodes: !If [RedshiftSingleNodeClusterCondition, !Ref "AWS::NoValue", !Ref NumberOfNodes]
+      ClusterType:
+        !If [RedshiftSingleNodeClusterCondition, 'single-node', 'multi-node']
+      ClusterIdentifier:
+        !Join [
+          '-',
+          [!Ref DatabaseName, !GetAtt GenerateIdStack.Outputs.UniqueID],
+        ]
+      NumberOfNodes:
+        !If [
+          RedshiftSingleNodeClusterCondition,
+          !Ref 'AWS::NoValue',
+          !Ref NumberOfNodes,
+        ]
       NodeType: !Ref NodeType
       DBName: !Ref DatabaseName
-      KmsKeyId: !If [IsEncryptionAtRest, !Ref kmskey, !Ref "AWS::NoValue"]
+      KmsKeyId: !If [IsEncryptionAtRest, !Ref kmskey, !Ref 'AWS::NoValue']
       Encrypted: !Ref EncryptionAtRest
       Port: !Ref RedshiftClusterPort
       MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
       ClusterParameterGroupName: !Ref RedshiftClusterParameterGroup
-      SnapshotIdentifier: !If [IsSnapshotSpecified, !Ref SnapshotIdentifier, !Ref "AWS::NoValue"]
-      OwnerAccount: !If [IsSnapshotAccountSpecified, !Ref SnapshotAccountNumber, !Ref "AWS::NoValue"]
+      SnapshotIdentifier:
+        !If [IsSnapshotSpecified, !Ref SnapshotIdentifier, !Ref 'AWS::NoValue']
+      OwnerAccount:
+        !If [
+          IsSnapshotAccountSpecified,
+          !Ref SnapshotAccountNumber,
+          !Ref 'AWS::NoValue',
+        ]
       VpcSecurityGroupIds:
         - !Ref RedshiftSecurityGroup
       PreferredMaintenanceWindow: !Ref Maintenancewindow
@@ -515,31 +580,30 @@ Resources:
         - true
         - false
       ClusterSubnetGroupName: !Ref RedshiftClusterSubnetGroup
-      LoggingProperties: !If 
-          - IsEnableLoggingToS3
-          - BucketName: !Ref RedshiftLoggingS3Bucket
-            S3KeyPrefix: 'AWSLogs'
-          - !Ref 'AWS::NoValue'
+      LoggingProperties: !If
+        - IsEnableLoggingToS3
+        - BucketName: !Ref RedshiftLoggingS3Bucket
+          S3KeyPrefix: 'AWSLogs'
+        - !Ref 'AWS::NoValue'
       IamRoles:
-          - !If 
-              - IsConfigureRedshiftIAMRole
-              - !GetAtt MyRedshiftIAMRole.Arn
-              - !Ref 'AWS::NoValue'
+        - !If
+          - IsConfigureRedshiftIAMRole
+          - !GetAtt MyRedshiftIAMRole.Arn
+          - !Ref 'AWS::NoValue'
       Tags:
-        -
-          Key: Name
-          Value: !Join [ "-", [ !Ref TagName, !Ref 'AWS::StackName', "Redshift-Cluster" ] ]
-        -
-          Key: Environment
+        - Key: Name
+          Value:
+            !Join [
+              '-',
+              [!Ref TagName, !Ref 'AWS::StackName', 'Redshift-Cluster'],
+            ]
+        - Key: Environment
           Value: !Ref TagEnvironment
-        -
-          Key: ProjectCostCenter
+        - Key: ProjectCostCenter
           Value: !Ref TagProjectCostCenter
-        -
-          Key: Confidentiality
+        - Key: Confidentiality
           Value: !Ref TagConfidentiality
-        -
-          Key: Compliance
+        - Key: Compliance
           Value: !Ref TagCompliance
   GlueCatalogDB:
     Condition: IsGlueCatalogName
@@ -547,81 +611,101 @@ Resources:
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
-          Name: !Ref GlueCatalogDatabase
-          Description: !Join [ "-", ["AWS-Glue-Catalog-Database", !GetAtt GenerateIdStack.Outputs.UniqueID] ]
+        Name: !Ref GlueCatalogDatabase
+        Description:
+          !Join [
+            '-',
+            [
+              'AWS-Glue-Catalog-Database',
+              !GetAtt GenerateIdStack.Outputs.UniqueID,
+            ],
+          ]
   MyRedshiftIAMRole:
     Type: 'AWS::IAM::Role'
     Condition: IsConfigureRedshiftIAMRole
     Properties:
-      RoleName: !Join [ "-", ["Redshift-IAM-Role", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      RoleName:
+        !Join [
+          '-',
+          ['Redshift-IAM-Role', !GetAtt GenerateIdStack.Outputs.UniqueID],
+        ]
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: '2012-10-17'
         Statement:
-          -
-            Effect: "Allow"
+          - Effect: 'Allow'
             Principal:
               Service:
-                - "redshift.amazonaws.com"
-                - "glue.amazonaws.com"
+                - 'redshift.amazonaws.com'
+                - 'glue.amazonaws.com'
             Action:
-              - "sts:AssumeRole"
-      Path: "/"
+              - 'sts:AssumeRole'
+      Path: '/'
       Policies:
-        -
-          PolicyName: !Join [ "-", ["Spectrum-Glue-Access-Policy", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+        - PolicyName:
+            !Join [
+              '-',
+              [
+                'Spectrum-Glue-Access-Policy',
+                !GetAtt GenerateIdStack.Outputs.UniqueID,
+              ],
+            ]
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: '2012-10-17'
             Statement:
-              -
-                Effect: "Allow"
+              - Effect: 'Allow'
                 Action:
-                    - s3:GetBucketLocation
-                    - s3:GetObject
-                    - s3:ListMultipartUploadParts
-                    - s3:ListBucket
-                    - s3:ListBucketMultipartUploads
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:ListMultipartUploadParts
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
                 Resource:
-                    - !Join ['', ["arn:aws:s3:::", !Ref S3BucketForRedshiftIAMRole]]
-                    - !Join ['', ["arn:aws:s3:::", !Ref S3BucketForRedshiftIAMRole, "/*"]]
-              -
-                Effect: Allow
+                  - !Join [
+                      '',
+                      ['arn:aws:s3:::', !Ref S3BucketForRedshiftIAMRole],
+                    ]
+                  - !Join [
+                      '',
+                      ['arn:aws:s3:::', !Ref S3BucketForRedshiftIAMRole, '/*'],
+                    ]
+              - Effect: Allow
                 Action:
-                    - glue:CreateDatabase
-                    - glue:DeleteDatabase
-                    - glue:GetDatabase
-                    - glue:GetDatabases
-                    - glue:UpdateDatabase
-                    - glue:CreateTable
-                    - glue:DeleteTable
-                    - glue:BatchDeleteTable
-                    - glue:UpdateTable
-                    - glue:GetTable
-                    - glue:GetTables
-                    - glue:BatchCreatePartition
-                    - glue:CreatePartition
-                    - glue:DeletePartition
-                    - glue:BatchDeletePartition
-                    - glue:UpdatePartition
-                    - glue:GetPartition
-                    - glue:GetPartitions
-                    - glue:BatchGetPartition
-                    - logs:*
+                  - glue:CreateDatabase
+                  - glue:DeleteDatabase
+                  - glue:GetDatabase
+                  - glue:GetDatabases
+                  - glue:UpdateDatabase
+                  - glue:CreateTable
+                  - glue:DeleteTable
+                  - glue:BatchDeleteTable
+                  - glue:UpdateTable
+                  - glue:GetTable
+                  - glue:GetTables
+                  - glue:BatchCreatePartition
+                  - glue:CreatePartition
+                  - glue:DeletePartition
+                  - glue:BatchDeletePartition
+                  - glue:UpdatePartition
+                  - glue:GetPartition
+                  - glue:GetPartitions
+                  - glue:BatchGetPartition
+                  - logs:*
                 Resource:
-                    - "*"
+                  - '*'
   SNSTopic:
     Type: AWS::SNS::Topic
     Properties:
       Subscription:
-      - Endpoint: !Ref NotificationList
-        Protocol: email
+        - Endpoint: !Ref NotificationList
+          Protocol: email
   DiskSpacealarmredshift:
     Type: 'AWS::CloudWatch::Alarm'
     Properties:
-      MetricName: !Join 
+      MetricName: !Join
         - ''
         - - !Ref RedshiftCluster
           - High-PercentageDiskSpaceUsed
-      AlarmDescription: !Join 
+      AlarmDescription: !Join
         - ''
         - - DiskSpace Utilization > 85% for
           - !Ref RedshiftCluster
@@ -641,11 +725,11 @@ Resources:
     Type: 'AWS::CloudWatch::Alarm'
     Condition: IsProd
     Properties:
-      MetricName: !Join 
+      MetricName: !Join
         - ''
         - - !Ref RedshiftCluster
           - High-CPUUtilization
-      AlarmDescription: !Join 
+      AlarmDescription: !Join
         - ''
         - - CPUUtilization > 95% for last 15 min for cluster
           - !Ref RedshiftCluster
@@ -667,22 +751,22 @@ Outputs:
     Value: !Sub '${AWS::StackName}'
   RedshiftClusterEndpoint:
     Description: Redshift cluster endpoint address with port
-    Value: !Sub "${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}"
+    Value: !Sub '${RedshiftCluster.Endpoint.Address}:${RedshiftCluster.Endpoint.Port}'
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftClusterEndpoint'
   RedshiftEndpoint:
     Description: Redshift endpoint address
-    Value: !Sub "${RedshiftCluster.Endpoint.Address}"
+    Value: !Sub '${RedshiftCluster.Endpoint.Address}'
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftEndpoint'
   RedshiftPort:
     Description: Redshift endpoint port
-    Value: !Sub "${RedshiftCluster.Endpoint.Port}"
+    Value: !Sub '${RedshiftCluster.Endpoint.Port}'
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftPort'
   RedshiftCluster:
     Description: Redshift cluser identifier
-    Value: !Sub "${RedshiftCluster}"
+    Value: !Sub '${RedshiftCluster}'
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftCluster'
   RedshiftParameterGroupName:
@@ -692,10 +776,17 @@ Outputs:
       Name: !Sub '${AWS::StackName}-RedshiftParameterGroupName'
   RedshiftDatabaseName:
     Description: Redshift database name
-    Value: !If 
-              - IsSnapshotSpecified
-              - !Join [ ' ',['Check name of database from which the Snapshot', !Ref SnapshotIdentifier , ' was originally taken.']]
-              - !Ref DatabaseName
+    Value: !If
+      - IsSnapshotSpecified
+      - !Join [
+          ' ',
+          [
+            'Check name of database from which the Snapshot',
+            !Ref SnapshotIdentifier,
+            ' was originally taken.',
+          ],
+        ]
+      - !Ref DatabaseName
     Export:
       Name: !Sub '${AWS::StackName}-RedshiftDatabaseName'
   RedshiftUsername:
@@ -720,15 +811,15 @@ Outputs:
     Value: !Ref GlueCatalogDB
     Export:
       Name: !Sub '${AWS::StackName}-GlueCatalogDBName'
-  PSQLCommandLine:    
+  PSQLCommandLine:
     Description: PSQL command line
     Value: !Join
-             - ''
-             - - 'psql -h '
-               - !GetAtt 'RedshiftCluster.Endpoint.Address' 
-               - ' -p '
-               - !GetAtt 'RedshiftCluster.Endpoint.Port'
-               - ' -U '
-               - !Ref MasterUsername
-               - ' -d '
-               - !Ref DatabaseName
+      - ''
+      - - 'psql -h '
+        - !GetAtt 'RedshiftCluster.Endpoint.Address'
+        - ' -p '
+        - !GetAtt 'RedshiftCluster.Endpoint.Port'
+        - ' -U '
+        - !Ref MasterUsername
+        - ' -d '
+        - !Ref DatabaseName

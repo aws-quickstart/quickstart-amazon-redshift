@@ -1,0 +1,31 @@
+project:
+  name: quickstart-amazon-redshift
+  owner: quickstart-eng@amazon.com
+  package_lambda: false
+  regions:
+    - ap-northeast-1
+  # - ap-northeast-2
+  # - ap-south-1
+  # - ap-southeast-1
+  # - ap-southeast-2
+  # - ca-central-1
+  # - eu-central-1
+  # - eu-west-1
+  # - us-east-1
+  # - us-east-2
+  # - us-west-1
+  # - us-west-2
+tests:
+  redshift:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_2]
+      KeyPairName: $[alfred_getkeypair]
+      MasterUserPassword: '!$[taskcat_genpass_8A]'
+      MasterUsername: dbmaster
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      QSS3KeyPrefix: quickstart-amazon-redshift/
+      RemoteAccessCIDR: 10.0.0.0/16
+    regions:
+      - ap-northeast-1
+    template: templates/redshift-master.template.yaml
