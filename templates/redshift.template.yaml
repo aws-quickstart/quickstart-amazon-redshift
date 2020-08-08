@@ -15,6 +15,9 @@ Parameters:
   Subnet2ID:
     Description: The ID of the private subnet in Availability Zone 2 in your existing VPC.
     Type: 'AWS::EC2::Subnet::Id'
+  Subnet3ID:
+    Description: The ID of the private subnet in Availability Zone 3 in your existing VPC.
+    Type: 'AWS::EC2::Subnet::Id'
   PubliclyAccessible:
     AllowedValues:
       - 'true'
@@ -177,6 +180,7 @@ Metadata:
           - VPCID
           - Subnet1ID
           - Subnet2ID
+          - Subnet3ID
           - RemoteAccessCIDR
       - Label:
           default: Amazon Redshift configuration
@@ -221,6 +225,8 @@ Metadata:
         default: Private subnet 1 ID
       Subnet2ID:
         default: Private subnet 2 ID
+      Subnet3ID:
+        default: Private subnet 3 ID
       RemoteAccessCIDR:
         default: Permitted IP range
       DatabaseName:
@@ -519,6 +525,7 @@ Resources:
       SubnetIds:
         - !Ref Subnet1ID
         - !Ref Subnet2ID
+        - !Ref Subnet3ID
       Tags:
         - Key: Name
           Value:
