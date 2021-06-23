@@ -381,7 +381,7 @@ Parameters:
   TagProjectCostCenter:
     Type: String
     Description: The cost center associated with the project of the given AWS resource.
-    Default: ''
+    Default: '0000'
   TagConfidentiality:
     Type: String
     Description: The confidentiality classification of the data that is associated with the resource.
@@ -390,8 +390,7 @@ Parameters:
       - private
       - confidential
       - pii/phi
-      - ''
-    Default: ''
+    Default: 'private'
   TagCompliance:
     Type: String
     Description: The compliance level for the AWS resource.
@@ -400,8 +399,7 @@ Parameters:
       - sox
       - fips
       - other
-      - ''
-    Default: ''
+    Default: 'other'
 Conditions:
   UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   EnableBastionAccess: !Equals
