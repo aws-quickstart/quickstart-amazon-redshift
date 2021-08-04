@@ -27,6 +27,7 @@ tests:
       QSS3KeyPrefix: quickstart-amazon-redshift/
       RemoteAccessCIDR: 10.0.0.0/16
       EnableBastion: "false"
+      ConcurrencyScaling: "off"
     regions:
       - ap-northeast-1
     template: templates/redshift-master.template.yaml

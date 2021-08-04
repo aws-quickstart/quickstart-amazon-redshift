@@ -24,6 +24,7 @@ Metadata:
           - MasterUserPassword
           - NotificationList
           - MakeRedshiftPubliclyAccessible
+          - ConcurrencyScaling
       - Label:
           default: Amazon Redshift advanced configuration
         Parameters:
@@ -81,6 +82,8 @@ Metadata:
         default: Enable Redshift logging to S3
       MaxConcurrentCluster:
         default: Max. number of concurrent clusters
+      ConcurrencyScaling:
+        default: Concurrency Scaling 
       EncryptionAtRest:
         default: Encryption at rest
       kmskey:
@@ -327,6 +330,13 @@ Parameters:
     Description: The maximum number of concurrency scaling Redshift clusters.
     Type: String
     Default: '1'
+  ConcurrencyScaling:
+    Description: When the number of queries routed to a queue exceeds the queue's configured concurrency, eligible queries go to the scaling cluster.
+    Default: 'auto'
+    Type: String
+    AllowedValues:
+      - 'auto'
+      - 'off'
   EncryptionAtRest:
     Description: Enables or disables encryption at rest of the Redshift database.
     Type: String
@@ -517,6 +527,7 @@ Resources:
         MasterUserPassword: !Ref MasterUserPassword
         Maintenancewindow: !Ref Maintenancewindow
         MaxConcurrentCluster: !Ref MaxConcurrentCluster
+        ConcurrencyScaling: !Ref ConcurrencyScaling
         EncryptionAtRest: !Ref EncryptionAtRest
         kmskey: !Ref kmskey
         SnapshotIdentifier: !Ref SnapshotIdentifier

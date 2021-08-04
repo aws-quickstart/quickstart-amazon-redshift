@@ -114,6 +114,13 @@ Parameters:
     Description: The name of your Glue Data Catalog database.
     AllowedPattern: '([ \t\n\x0B\f\r])*|([a-z])([\-]|[a-z]|[\-]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9 or hyphen (-).
+  ConcurrencyScaling:
+    Default: 'auto'
+    Type: String
+    AllowedValues:
+      - 'auto'
+      - 'off'
+    Description: When the number of queries routed to a queue exceeds the queue's configured concurrency, eligible queries go to the scaling cluster.
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: 'Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).'
@@ -199,6 +206,7 @@ Metadata:
           - Maintenancewindow
           - S3BucketForRedshiftIAMRole
           - GlueCatalogDatabase
+          - ConcurrencyScaling
       - Label:
           default: Tag identifiers
         Parameters:
@@ -211,6 +219,7 @@ Metadata:
           default: AWS Quick Start configuration
         Parameters:
           - QSS3BucketName
+          - QSS3BucketRegion
           - QSS3KeyPrefix
     ParameterLabels:
       VPCID:
@@ -251,6 +260,8 @@ Metadata:
         default: AWS account-ID of the Redshift Snapshot
       GlueCatalogDatabase:
         default: Glue catalog database name
+      ConcurrencyScaling:
+        default: Concurrency Scaling 
       Maintenancewindow:
         default: Maintenance window
       TagEnvironment:
@@ -267,6 +278,8 @@ Metadata:
         default: Make Redshift publicly accessible
       QSS3BucketName:
         default: Quick Start S3 bucket name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket Region
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
 Mappings:
@@ -490,7 +503,7 @@ Resources:
         - ParameterName: max_concurrency_scaling_clusters
           ParameterValue: !Ref MaxConcurrentCluster
         - ParameterName: 'wlm_json_configuration'
-          ParameterValue: '[ { "query_group" : [ ],"query_group_wild_card" : 0,"user_group" : [ ],"user_group_wild_card" : 0,"concurrency_scaling" : "auto","rules" : [ {  "rule_name" : "DiskSpilling",  "predicate" : [ { "metric_name" : "query_temp_blocks_to_disk", "operator" : ">", "value" : 100000  } ], "action" : "log"}, {  "rule_name" : "RowJoining",  "predicate" : [ { "metric_name" : "join_row_count", "operator" : ">", "value" : 1000000000 } ],  "action" : "log"} ],"priority" : "normal","queue_type" : "auto","auto_wlm" : true }, {"short_query_queue" : true } ]'
+          ParameterValue: !Sub '[ { "query_group" : [ ],"query_group_wild_card" : 0,"user_group" : [ ],"user_group_wild_card" : 0,"concurrency_scaling" : "${ConcurrencyScaling}","rules" : [ {  "rule_name" : "DiskSpilling",  "predicate" : [ { "metric_name" : "query_temp_blocks_to_disk", "operator" : ">", "value" : 100000  } ], "action" : "log"}, {  "rule_name" : "RowJoining",  "predicate" : [ { "metric_name" : "join_row_count", "operator" : ">", "value" : 1000000000 } ],  "action" : "log"} ],"priority" : "normal","queue_type" : "auto","auto_wlm" : true }, {"short_query_queue" : true } ]'
       Tags:
         - Key: Name
           Value:
