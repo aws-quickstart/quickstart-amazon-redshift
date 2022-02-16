@@ -121,6 +121,14 @@ Parameters:
       - 'auto'
       - 'off'
     Description: When the number of queries routed to a queue exceeds the queue's configured concurrency, eligible queries go to the scaling cluster.
+  AquaConfigurationStatus:
+    Default: 'auto'
+    Type: String
+    AllowedValues:
+      - 'auto'
+      - 'enabled'
+      - 'disabled'
+    Description: The value represents how the cluster is configured to use AQUA (Advanced Query Accelerator), a new distributed and hardware-accelerated cache, when it is created.
   QSS3BucketName:
     AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
     ConstraintDescription: 'Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).'
@@ -554,6 +562,7 @@ Resources:
     DeletionPolicy: 'Snapshot'
     UpdateReplacePolicy: 'Snapshot'
     Properties:
+      AquaConfigurationStatus: !Ref AquaConfigurationStatus
       ClusterType:
         !If [RedshiftSingleNodeClusterCondition, 'single-node', 'multi-node']
       ClusterIdentifier:
