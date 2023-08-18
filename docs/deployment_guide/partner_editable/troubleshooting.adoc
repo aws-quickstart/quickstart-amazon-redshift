@@ -1,0 +1,34 @@
+// Add any unique troubleshooting steps here.
+
+For troubleshooting common Partner Solution issues, refer to the https://fwd.aws/rA69w?[AWS Partner Solution General Information Guide^] and https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/troubleshooting.html[Troubleshooting CloudFormation^].
+
+== FAQ
+
+*Q.* I encountered a CREATE_FAILED with reason “Error Code: ClusterSnapshotNotFound” for the Redshift stack when I launched the Quick Start.
+
+*A.* The Redshift stack fails with Error Code: ClusterSnapshotNotFound for one of following reasons:
+
+* Invalid Snapshot Identifier in the parameter SnapshotIdentifier.
+* AWS account-ID in the parameter SnapshotAccountNumber is different than the AWS account-ID of the snapshot.
+* Missing AWS account-ID in the parameter SnapshotAccountNumber and the snapshot is not created in current AWS account.
+
+== Additional resources
+
+*AWS resources*
+
+* https://aws.amazon.com/getting-started/[Getting Started Resource Center]
+* https://docs.aws.amazon.com/general/latest/gr/[AWS General Reference]
+* https://docs.aws.amazon.com/general/latest/gr/glos-chap.html[AWS Glossary]
+
+*AWS services*
+
+* https://docs.aws.amazon.com/cloudformation/[AWS CloudFormation]
+* https://docs.aws.amazon.com/cloudwatch/[Amazon CloudWatch]
+* https://docs.aws.amazon.com/ec2/[Amazon EC2]
+* https://docs.aws.amazon.com/iam/[IAM]
+* https://aws.amazon.com/redshift/[Amazon Redshift]
+* https://docs.aws.amazon.com/s3/[Amazon S3]
+* https://docs.aws.amazon.com/sns/[Amazon SNS]
+* https://docs.aws.amazon.com/vpc/[Amazon VPC]
+* https://docs.aws.amazon.com/glue/[AWS Glue]
+* https://docs.aws.amazon.com/kms/[AWS KMS]

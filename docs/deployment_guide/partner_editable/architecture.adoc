@@ -1,0 +1,28 @@
+:xrefstyle: short
+
+Deploying this Partner Solution with default parameters builds the following {partner-product-short-name} environment in the
+AWS Cloud.
+
+// Replace this example diagram with your own. Follow our wiki guidelines: https://w.amazon.com/bin/view/AWS_Quick_Starts/Process_for_PSAs/#HPrepareyourarchitecturediagram. Upload your source PowerPoint file to the GitHub {deployment name}/docs/images/ directory in its repository.
+
+[#architecture1]
+.Partner Solution architecture for {partner-product-short-name} on AWS
+image::../docs/deployment_guide/images/image1.png[Architecture]
+
+As shown in <<architecture1>>, this Partner Solution sets up the following:
+
+* A highly available architecture that spans two Availability Zones.*
+* A highly available architecture that spans two Availability Zones.*
+* A VPC configured with public and private subnets according to AWS best practices, to provide you with your own virtual network on AWS.*
+* In the public subnets:
+** Managed network address translation (NAT) gateways to allow outbound internet access for resources in the private subnets.*
+** A Linux bastion host in an Auto Scaling group to allow inbound Secure Shell (SSH) access to Amazon Elastic Compute Cloud (Amazon EC2) instances in public and private subnets.*
+* In a private subnet, an Amazon Redshift cluster and its components, such as a cluster subnet group, parameter group, workload management (WLM), and a security group that allows access to the VPC.
+* An Amazon Simple Storage Service (Amazon S3) bucket for audit logs.
+* A VPC endpoint for Amazon S3, so that Amazon Redshift and other AWS resources that are run in a private subnet can have controlled access to Amazon S3 bucket.
+* The Quick Start uses a key from AWS Key Management Service (AWS KMS) to enable encryption at rest for the Amazon Redshift cluster, and creates a default master key when no other key is defined.
+* Amazon CloudWatch alarms to monitor the CPU on the bastion host, to monitor the CPU and disk space of the Amazon Redshift cluster, and to send an Amazon SNS notification, when the alarm is triggered.
+* An AWS Identity and Access Management (IAM) role that grants https://docs.aws.amazon.com/redshift/latest/dg/c-spectrum-iam-policies.html#spectrum-iam-policies-minimum-permissions[minimum permissions required to use Redshift Spectrum] with Amazon S3, Amazon CloudWatch Logs, AWS Glue, and Amazon Athena.
+* An https://docs.aws.amazon.com/glue/latest/dg/populate-data-catalog.html[AWS Glue Catalog] as a metadata store.
+
+[.small]#* The template that deploys this Partner Solution into an existing VPC skips the components marked by asterisks and prompts you for your existing VPC configuration.#

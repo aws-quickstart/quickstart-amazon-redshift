@@ -1,0 +1,17 @@
+:partner-solution-project-name: quickstart-amazon-redshift
+:partner-solution-github-org: aws-quickstart
+:partner-product-name: Modular Architecture for Amazon Redshift
+:partner-product-short-name: Redshift
+//:partner-company-name: Example Company Name, Ltd.
+:doc-month: August
+:doc-year: 2023
+//:partner-contributors: John Smith, {partner-company-name}
+// :other-contributors: Akua Mansa, Trek10
+:aws-contributors: Sudhir Gupta and Tony Vattathil, AWS
+//:aws-ia-contributors: Toni Jones, AWS Integration & Automation team
+:deployment_time: 15 minutes
+:default_deployment_region: us-east-1
+// :private_repo:
+
+
+// For instructions on creating this deployment guide, refer to "Build your AWS Partner Solution documentation" (https://aws-ia-us-west-2.s3.us-west-2.amazonaws.com/docs/content/index.html#/).
