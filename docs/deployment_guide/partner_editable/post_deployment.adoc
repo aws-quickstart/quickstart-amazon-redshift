@@ -1,0 +1,67 @@
+// Include any postdeployment steps here, such as steps necessary to test that the deployment was successful. If there are no postdeployment steps, leave this file empty.
+
+== Postdeployment steps
+
+. Monitor the status of the stack. When the status is *CREATE_COMPLETE*, the Amazon Redshift cluster is ready.
+. Use the URLs displayed in the *Resources* tab for the stack to view the resources that were created.
+
+[#postdeploy1]
+.For new VPC, successful deployment of all stacks
+image::../docs/deployment_guide/images/image2.png[Architecture]
+
+[#postdeploy2]
+.Amazon Redshift resources after successful deployment
+image::../docs/deployment_guide/images/image3.png[Architecture]
+
+=== Test the deployment
+
+==== Test whether the Redshift cluster is accepting connections
+
+. From the AWS CloudFormation console, in the *Outputs* tab for RedshiftStack, note the values of RedshiftUsername, RedshiftDatabaseName, and RedshiftClusterEndpoint, as shown in the following figure.
+
+[#postdeploy3]
+.Redshift cluster user name, database name, and cluster endpoint, in Outputs tab
+image::../docs/deployment_guide/images/image4.png[Architecture]
+
+[start=2]
+. Navigate to the Amazon Redshift console at https://console.aws.amazon.com/redshift/home[https://console.aws.amazon.com/redshift/].
+. Choose *Query Editor* and enter your credentials to connect to the Redshift database, as shown in the following figure.
+
+[#postdeploy4]
+.Credentials window from Redshift Query Editor
+image::../docs/deployment_guide/images/image5.png[Architecture]
+
+[start=4]
+. After successful connection, run a sample query “select * from pg_user;”, as shown in the following figure.
+
+[#postdeploy5]
+.Successful connection to Amazon Redshift
+image::../docs/deployment_guide/images/image6.png[Architecture]
+
+==== Test whether the Linux bastion host is accepting connections
+
+[start=5]
+. Note down the Elastic IP address of the bastion host from the *Outputs* tab of the bastion stack, as shown in the following figure.
+
+[#postdeploy6]
+.Elastic IP address of the bastion host, in the Outputs tab of the bastion stack
+image::../docs/deployment_guide/images/image7.png[Architecture]
+
+[start=6]
+. Open a terminal window and connect to the bastion host by using SSH with the key pair that you specified during deployment, as shown in the following figure.
+
+ssh -i "<EC2 key pair>" ec2-user@52.26.20.201
+
+[#postdeploy7]
+.Successful connection to the Linux bastion host
+image::../docs/deployment_guide/images/image8.png[Architecture]
+
+== Best practices for using Amazon Redshift
+
+For detailed information about working with Amazon Redshift, see the https://docs.aws.amazon.com/redshift/latest/dg/c-who-should-use-this-guide.html[Amazon Redshift Database Developer Guide].
+
+Use AWS CloudFormation for ongoing management
+
+We recommend using the AWS CloudFormation console at https://console.aws.amazon.com/cloudformation/ to manage updates and deletions for the resources that are created by this Quick Start.
+
+If you use the Amazon EC2 console at https://console.aws.amazon.com/ec2/, the AWS Command Line Interface (AWS CLI), or API to change or delete resources created by this Quick Start, future AWS CloudFormation operations on the stack might behave unexpectedly.

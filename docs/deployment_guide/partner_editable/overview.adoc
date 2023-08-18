@@ -1,0 +1,11 @@
+This Partner Solution reference deployment guide provides step-by-step instructions for deploying an Amazon Redshift cluster on the AWS Cloud using AWS best practices for security, reliability and availability.
+
+This Partner Solution is for users who are looking for a repeatable, customizable reference deployment of Amazon Redshift using AWS CloudFormation.
+
+You can also use the Partner Solution as a building block in your own automated deployments by using the https://fwd.aws/Ak78B[template that we’ve provided for an existing virtual private cloud (VPC)]. This template will build only the Amazon Redshift cluster components and plugs into your existing AWS CloudFormation templates as a drop-in Amazon Redshift cluster replacement.
+
+=== Amazon Redshift
+
+https://aws.amazon.com/redshift/[Amazon Redshift] is a fast, fully managed data warehouse that makes it simple and cost-effective to analyze all your data using standard structured query language (SQL) and your existing business intelligence tools. It enables you to run complex analytic queries against petabytes of structured data, using sophisticated query optimization, columnar storage on high-performance local disks, and massively parallel query execution.
+
+Traditional data warehouses require significant time and resources to administer, especially for large datasets. In addition, the financial cost associated with building, maintaining, and growing self-managed, on-premises data warehouses is very high. Amazon Redshift not only significantly lowers the cost and operational overhead of a data warehouse but, with_ https://docs.aws.amazon.com/redshift/latest/dg/c-using-spectrum.html#c-spectrum-overview[[.underline]#Redshift Spectrum#], also makes it easy to analyze large amounts of data in its native format, without requiring you to load the data.
